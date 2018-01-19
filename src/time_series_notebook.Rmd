@@ -1,6 +1,11 @@
-# Notebook -- Hakai Institute Juvenile Salmon Program 2015 — 2017 Time Series
+---
+title: "Notebook - Hakai Institute Juvenile Salmon Program Time Series"
+output: html_notebook
+---
 
-## Objectives:
+This is my lab notebook for ideas, literature review, and exploratory data analysis related to the preparation of a manuscript for reporting yearly time series data of the Hakai Institute Juvenile Salmon Program.
+
+# Objectives:
 The objectives of this manuscript are to:
 
 * Introduce the Juvenile Salmon Program
@@ -8,11 +13,9 @@ The objectives of this manuscript are to:
 * Present time series of data
 * Point to papers that present deeper analysis of time series data
 
-Draft Title: Hakai Institute Juvenile Salmon Survival Program — Monitoring and Research 2015 – 2017.
+# Key Parameters Reported:
 
-## Key Parameters Reported:
-
-### Fish Metrics
+## Fish Metrics
 * Salmon CPUE
 * Spp. composition. Plot per week, per migration corridor
 * Stock specific relative condition factor
@@ -20,7 +23,7 @@ Draft Title: Hakai Institute Juvenile Salmon Survival Program — Monitoring and
 * Weights
 * Parasite loads
 
-### Oceanography
+## Oceanography
 * Chl a - Justin sorting out phaepigments...
 * Phyto Biomass
 * Nutrients - Depending on when they are analyzed 
@@ -36,7 +39,7 @@ New analysis (No overlap)
 
 * Salinity, Nutrients, Zoop biomass, Phyto biomass. (Kang has these time series)
 
-## Literature Review
+# Literature Review
 
   __Beamish, R. J., Pearsall, I. a, & Healey, M. C. (2003). A history of the research on the early Marine life of Pacific salmon off Canada’s Pacific coast. NPAFC Bulletin, 3(3), 1–40.__
 
@@ -64,5 +67,18 @@ Pearcy and FIsher 1990
 Straty 1974 
 Looks like a good one
 Farley et al. (1999, 2000a, 2001a, c)
+# Notebook
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(hakaisalmon)
+library(tidyverse)
+library(lubridate)
+```
 
-Continue reading from ‘MOVEMENTS IN COASTAL WATERS’
+```{r}
+
+```
+
+
+
+
