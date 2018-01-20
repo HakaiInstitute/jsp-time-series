@@ -1,6 +1,6 @@
 ---
 title: "Notebook - Hakai Institute Juvenile Salmon Program Time Series"
-output: html_notebook
+output: _notebook
 ---
 
 This is my lab notebook for ideas, literature review, and exploratory data analysis related to the preparation of a manuscript for reporting yearly time series data of the Hakai Institute Juvenile Salmon Program.
@@ -67,7 +67,7 @@ Pearcy and FIsher 1990
 Straty 1974 
 Looks like a good one
 Farley et al. (1999, 2000a, 2001a, c)
-# Notebook
+# Analysis Notebook
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(hakaisalmon)
@@ -75,8 +75,73 @@ library(tidyverse)
 library(lubridate)
 ```
 
-```{r}
+```{r Migration timing}
+cpue <-  select(survey_seines, survey_date, sampling_week, site_id, region, so_total) %>%
+  filter(site_id %in% c("D07", "D09", "D22", "D27", "D10", "D08", "D34",
+                        "D20", "J03", "J02", "J09", "J11")) %>%
+  # I only included the above sites, because they have been consistent
+  # over the last few years.
+  mutate(year = year(survey_date)) %>%
+  select(-site_id, -survey_date) %>% 
+  replace_na(list(so_total = 0)) %>% 
+  group_by(year, region, sampling_week) %>% 
+  summarise_each(funs(mean, sd, cpue.se=sd(.) / sqrt(n())))
+  
 
+cpue$year <- as.factor(cpue$year)
+labels <- c(DI = "Discovery Islands", JS = "Johnstone Strait")
+cpue$sampling_week <- as_factor(cpue$sampling_week)
+dodge <- position_dodge(width=0.5)
+  
+cpue_plot_error_bars <- ggplot(data = cpue, aes(x = sampling_week, y = mean,
+                                     colour = year, group = year)) +
+  geom_errorbar(aes(ymin = mean - cpue.se, ymax = mean + cpue.se),
+  position = position_dodge(width = 0.15),
+  width = 0.3) +
+  facet_wrap(~ region, nrow = 2, scales = "free_y",
+             labeller = labeller(region = labels)) +
+  theme(strip.text.x = element_text(size=12)) +
+  geom_line(size = 1.5) +
+  geom_point(size = 2, position = position_dodge(width = 0.15)) +
+  xlab("Date") +
+  ylab("Sockeye CPUE") +
+  theme(legend.justification = c(1, 0), legend.position = c(.83, .67)) +
+  theme(legend.title = element_blank()) +
+  theme(legend.text = element_text(colour = "black", size = 12)) +
+  theme(axis.text = element_text(size = 12),
+        axis.text.x = element_text(angle = 45, vjust = 0.5),
+        axis.title = element_text(size = 12, face = "bold")) 
+
+
+cpue_plot_error_bars
+```
+
+```{r Species composition}
+
+
+# Generate SEMSP IDs for all fish caught based on catch data entered in the
+# field spreadsheets
+tidy_catch<- survey_seines %>% 
+  select(survey_date, seine_id, so_total, pi_total, cu_total, co_total, he_total) %>% 
+  mutate(year = year(survey_date)) %>% 
+  drop_na(so_total) %>% # This removes instances when the net was not set
+  gather(`so_total`, `pi_total`, `cu_total`, `co_total`, `he_total`, key = "species",
+         value = "n") %>% 
+  drop_na()
+
+tidy_catch <- as.data.frame(tidy_catch)
+
+tidy_catch_expanded<- tidy_catch[rep(row.names(tidy_catch), tidy_catch$n), 1:4]
+
+tidy_catch_expanded <- tidy_catch_expanded %>% 
+  group_by(year, species) %>% 
+  summarize(n = n()) %>% 
+  mutate(proportion = n / sum(n)) %>%
+  ungroup()
+
+ggplot(data = tidy_catch_expanded, aes(x = year, y = proportion, fill = species)) +
+      geom_bar(stat="identity", position = 'stack') 
+           
 ```
 
 
