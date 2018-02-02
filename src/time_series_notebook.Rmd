@@ -40,6 +40,115 @@ New analysis (No overlap)
 * Salinity, Nutrients, Zoop biomass, Phyto biomass. (Kang has these time series)
 
 # Literature Review
+## Migration dynamics 
+Stock specific run timing and migration routes add a layer of
+complexity to understanding salmon early marine survival. Run timing interacts
+with plankton bloom timing and can be critical to the feeding conditions
+experienced by juvenile salmon. Migration routes and rates determine the extent
+to which specific populations interact with feeding hotspots / barrens as well
+as potential sources of pathogen transmission (e.g., sympatric wild host fishes
+and / or aquaculture facilities). As such, knowledge of stock specific migration
+behavior within the Discovery Islands is critical to inform stock specific risk
+assessment.
+
+Put into context work done by Neville and Beamish to estimate residence period
+and distribution. Oceanographic Conditions Fraser River sockeye experience a
+wide range of oceanographic conditions along their juvenile outmigration. The
+majority of juvenile salmon exit the Strait of Georgia through the Discovery
+Islands / Johnstone Strait into Queen Charlotte Sound. Oceanographic conditions
+differ substantially across these regions, affecting plankton productivity and
+hence food availability for the juvenile fish. The Strait of Georgia basin and
+Queen Charlotte Sound are typically stratified and exhibit high primary
+production during the spring / summer months (Jackson et al., 2015). Conversely,
+the Discovery Islands / Johnstone Strait region is subject to high tidal mixing
+which is expected to reduce primary production through light limitation,
+concomitantly supporting lower zooplankton (juvenile salmon prey) biomass
+(McKinnell et al., 2014). Predicted poor feeding conditions in the Discovery
+Islands / Johnstone Strait make this region a potential choke point for juvenile
+salmon that may determine their capacity to survive changes in productivity in
+the Strait of Georgia and / or Queen Charlotte Sound. This concept was recently
+formalised as the “Trophic Gauntlet Hypothesis” by McKinnell et al. (2014).
+Although this hypothesis is as yet untested, in part due to a lack of
+oceanographic / prey data for the Discovery Islands / Johnstone Strait region,
+growth hormone (IGF1) data do indicate poor juvenile salmon growth in this
+region (Ferriss et al., 2014). Similarly, smolts that took longer to migrate
+from the northern Strait of Georgia to Queen Charlotte Sound had lower survival
+rates compared to those fish which moved quickly through the region (Furey et
+al. 2015).”
+
+Spring plankton blooms are occurring earlier as climate changes (Chittenden et
+al. 2010). Phytoplankton bloom timing is variable in the Strait of Georgia and
+can occur anytime from late February to April (Allen and Latornell 2015).
+Drivers of phytoplankton bloom timing include light availability, mixing of
+phytoplankton over depth from strong winds (increased mixing means less growth
+of phytoplankton) and fresh-water run-off (Allen and Latornell 2015). As a
+result there may be a mismatch between peak zooplankton prey production and
+arrival of juvenile salmon entering the marine environment. Smolt to adult
+survival has been found to be 1.5 - 3 times higher in hatchery coho salmon (O.
+kisutch) that were released to coincide with high marine productivity
+(Chittenden et al. 2010). Regional oceanographic conditions are subject to
+anthropogenic impacts (e.g., pollution), climate cycles (e.g., ENSO, PDO) and
+long term climate change. Through changing light and nutrient availability,
+anthropogenic and physical forcing (e.g., wind, cloud cover, freshet timing,
+spring warming) can cause variations in the timing of plankton blooms (Allen and
+Wolfe, 2013), the subsequent biomass accumulation (Jackson et al., 2015), and
+the quality of that biomass as food for juvenile salmon (El-Sabaawi et al.,
+2009).
+
+## Fish Growth and Health Growth 
+
+Elaborate on critical size critical period
+hypothesis… ie Beamish and Mahnken 2001.
+
+Growth rates in the early marine phase of migrating sockeye have been shown to
+influence marine survival rates (Farley et al. 2011). Concordantly, abundance of
+Harrison River sockeye in the Strait of Georgia in September, after being
+subject to biooceanographic conditions in the Strait for several months, was
+found to be the best predictor of subsequent escapement (Beamish et al. 2016).
+This suggests that conditions in the Strait of Georgia and the first months at
+sea are important in determining brood year survival.”
+Multiple factors are expected to impact juvenile salmon survival during the
+early marine phase, with food availability for growth considered to be the
+leading contender followed by pathogen and parasite infection (Cohen, 2012b;
+Peterman et al., 2010). Strong correlative evidence supports the role of feeding
+conditions in salmon stock fluctuations (Beamish et al., 2012; Thomson et al.,
+2012), yet few studies have examined plankton prey quality and quantity and
+explicitly linked this to the growth and condition of fish. Condition Speak to
+fulton’s condition factor and elaborate on ideas from paper from Chesapeake bay
+
+## Parasites and Pathogens
+
+An additional area of uncertainty and research priority
+is the role of pathogens and parasites in the survival of salmon during their
+early marine phase (Cohen, 2012a; Cohen, 2012b; Cohen, 2012c). The Discovery
+Islands / Johnstone Strait host the majority of British Columbia’s salmon farms.
+Since this region is the primary migration route for wild Fraser River salmon
+there is the potential for pathogens and parasites to be transmitted between
+wild and farmed fish (Cohen, 2012b; Cohen, 2012c). Parasites and pathogens can
+be a source of significant mortality in wild salmon (Miller et al., 2014) and
+can cause catastrophic losses in salmon aquaculture (Mennerat et al., 2010).
+However, our current understanding of infectious disease dynamics in wild and
+farmed fish, and their interactions, are limited. There are a large number of
+pathogens that naturally infect wild Pacific salmon (Miller et al., 2014), and
+the domesticated environments in aquaculture may change the population dynamics
+and phenotypic traits of pathogens in ways that may threaten both wild and
+farmed salmon (Mennerat et al., 2010). Thus, understanding the ecology and
+evolution of pathogens in this context is essential for the sustainable
+management of both wild and farmed salmon in British Columbia.
+Pathogens and parasites may have both direct (lethal) and indirect (sub-lethal)
+effects. In addition to having the potential to cause direct mortality,
+pathogens can compromise the ability of salmon to grow (Sandell et al., 2015),
+compete for food (Godwin et al., 2015), and avoid predators (Krkošek et al.,
+2011; Mesa et al., 1998). Because these indirect effects can reduce foraging
+success they would be expected, if occurring, to amplify the projected poor
+feeding conditions in the Discovery Islands / Johnstone Strait. This highlights
+the importance of understanding infection dynamics in addition to feeding
+conditions in the region. Infection dynamics are expected to depend on exposure
+to pathogens outside of the region, as well as a combination of wild fish
+migration paths, residence time in the vicinity of farmed fish net pens, and
+factors influencing transmission, such as the persistence of pathogens and
+parasites in the water column (Miller et al., 2014).
+
 
   __Beamish, R. J., Pearsall, I. a, & Healey, M. C. (2003). A history of the research on the early Marine life of Pacific salmon off Canada’s Pacific coast. NPAFC Bulletin, 3(3), 1–40.__
 
@@ -68,14 +177,20 @@ Straty 1974
 Looks like a good one
 Farley et al. (1999, 2000a, 2001a, c)
 # Analysis Notebook
+
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(hakaisalmon)
 library(tidyverse)
 library(lubridate)
+library(ggridges)
 ```
 
-```{r Migration timing}
+## Migration Dynamics
+
+### Migration Timing
+
+```{r MT averaged by week}
 cpue <-  select(survey_seines, survey_date, sampling_week, site_id, region, so_total) %>%
   filter(site_id %in% c("D07", "D09", "D22", "D27", "D10", "D08", "D34",
                         "D20", "J03", "J02", "J09", "J11")) %>%
@@ -116,11 +231,104 @@ cpue_plot_error_bars <- ggplot(data = cpue, aes(x = sampling_week, y = mean,
 cpue_plot_error_bars
 ```
 
+In an effort to consider alternative methods to estimate run-timing I will
+consider here I suppose another method to be to take the average and standard
+deviations of each year and plot a normal distribution.
+```{r MT averaged by date}
+tidy_catch<- survey_seines %>% 
+  select(survey_date, seine_id, region, so_total, pi_total, cu_total, co_total, he_total) %>% 
+  mutate(year = year(survey_date)) %>% 
+  drop_na(so_total) %>% # This removes instances when the net was not set
+  gather(`so_total`, `pi_total`, `cu_total`, `co_total`, `he_total`, key = "species",
+         value = "n") %>% 
+  drop_na() %>% 
+  filter(species == "so_total")
+    
+so_catch <- as.data.frame(tidy_catch)
+
+so_catch_expanded <- so_catch[rep(row.names(tidy_catch), tidy_catch$n), 1:5] %>% 
+  mutate(yday = yday(survey_date))
+
+so_mt <- so_catch_expanded %>% 
+  mutate(yday = yday(survey_date)) %>% 
+  group_by(year, region) %>% 
+             summarize(avg_date = mean(yday),
+                       sd = round(sd(yday),0))
+
+di_mean_date_2015 <- as.numeric(so_mt[1,3])
+di_sd_2015 <- as.numeric(so_mt[1,4])
+js_mean_date_2015 <- as.numeric(so_mt[2,3])
+js_sd_2015 <- as.numeric(so_mt[2,4])
+di_mean_date_2016 <- as.numeric(so_mt[3,3])
+di_sd_2016 <- as.numeric(so_mt[3,4])
+js_mean_date_2016 <- as.numeric(so_mt[4,3])
+js_sd_2016 <- as.numeric(so_mt[4,4])
+di_mean_date_2017 <- as.numeric(so_mt[5,3])
+di_sd_2017 <- as.numeric(so_mt[5,4])
+js_mean_date_2017 <- as.numeric(so_mt[6,3])
+js_sd_2017 <- as.numeric(so_mt[6,4])
+
+date_range <- tibble(dates = c(121:182))
+
+di_sim_set <- tibble("2015" = rnorm(100000, di_mean_date_2015, di_sd_2015),
+                      "2016" = rnorm(100000, di_mean_date_2016, di_sd_2016),
+                      "2017" = rnorm(100000, di_mean_date_2017, di_sd_2017),
+                     "region" = "DI") %>% 
+  gather(`2015`, `2016`, `2017`, key = "year", value = "yday")
+
+js_sim_set <- tibble("2015" = rnorm(100000, js_mean_date_2015, js_sd_2015),
+                      "2016" = rnorm(100000, js_mean_date_2016, js_sd_2016),
+                      "2017" = rnorm(100000, js_mean_date_2017, js_sd_2017),
+                     "region" = "JS") %>% 
+  gather(`2015`, `2016`, `2017`, key = "year", value = "yday")
+
+sim_set <- rbind(di_sim_set,js_sim_set)
+
+ggplot(sim_set, aes(x = yday, y = year, fill = year)) +
+         geom_density_ridges()+
+  facet_grid(region ~ .)
+
+# TODO format plot with axis breaks that are dates, and adjsut the side label,
+# to make it a top label.
+# TODO rm() all the outputs created from this chunk
+```
+
+```{r CPUE}
+
+# TODO redo this code so that it calculates CPUE by year, by region by species
+# in a simple dplyr pipe chain
+
+# Calculate cpue by region annualy
+# DI
+di_n_sockeye_per_year <- so_catch_expanded %>% 
+  filter(region == "DI") %>% 
+  group_by(year, seine_id) %>% 
+  # count the number of fish from each seine
+  summarise(n = n()) %>% 
+  group_by(year) %>% 
+  # calculate the annual mean cpue
+  summarize(cpue = mean(n))
+
+di_cpue_2015 <- as.numeric(di_n_sockeye_per_year[1,2])
+di_cpue_2016 <- as.numeric(di_n_sockeye_per_year[2,2])
+di_cpue_2017 <- as.numeric(di_n_sockeye_per_year[3,2])
+# JS
+JS_n_sockeye_per_year <- so_catch_expanded %>% 
+  filter(region == "JS") %>% 
+  group_by(year, seine_id) %>% 
+  # count the number of fish from each seine
+  summarise(n = n()) %>% 
+  group_by(year) %>% 
+  # calculate the annual mean cpue
+  summarize(cpue = mean(n))
+
+JS_cpue_2015 <- as.numeric(JS_n_sockeye_per_year[1,2])
+JS_cpue_2016 <- as.numeric(JS_n_sockeye_per_year[2,2])
+JS_cpue_2017 <- as.numeric(JS_n_sockeye_per_year[3,2])
+
+```
+
 ```{r Species composition}
-
-
-# Generate SEMSP IDs for all fish caught based on catch data entered in the
-# field spreadsheets
 tidy_catch<- survey_seines %>% 
   select(survey_date, seine_id, so_total, pi_total, cu_total, co_total, he_total) %>% 
   mutate(year = year(survey_date)) %>% 
@@ -131,15 +339,14 @@ tidy_catch<- survey_seines %>%
 
 tidy_catch <- as.data.frame(tidy_catch)
 
-tidy_catch_expanded<- tidy_catch[rep(row.names(tidy_catch), tidy_catch$n), 1:4]
-
-tidy_catch_expanded <- tidy_catch_expanded %>% 
+tidy_catch_expanded <- tidy_catch[rep(row.names(tidy_catch), tidy_catch$n), 1:4]
+proportions <- tidy_catch_expanded %>% 
   group_by(year, species) %>% 
   summarize(n = n()) %>% 
   mutate(proportion = n / sum(n)) %>%
   ungroup()
 
-ggplot(data = tidy_catch_expanded, aes(x = year, y = proportion, fill = species)) +
+ggplot(data = proportions, aes(x = year, y = proportion, fill = species)) +
       geom_bar(stat="identity", position = 'stack') 
            
 ```
