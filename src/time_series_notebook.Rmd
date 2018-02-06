@@ -1,11 +1,19 @@
 ---
 title: "Notebook - Hakai Institute Juvenile Salmon Program Time Series"
-output: _notebook
+author: "Brett Johnson"
+date: "February 5, 2018"
+output: 
+  html_document:
+    theme: "sandstone"
+    code_folding: hide
+    toc: true
+    toc_float: true
+    toc_depth: 2
 ---
 
 This is my lab notebook for ideas, literature review, and exploratory data analysis related to the preparation of a manuscript for reporting yearly time series data of the Hakai Institute Juvenile Salmon Program.
 
-# Objectives:
+# Objectives
 The objectives of this manuscript are to:
 
 * Introduce the Juvenile Salmon Program
@@ -13,7 +21,7 @@ The objectives of this manuscript are to:
 * Present time series of data
 * Point to papers that present deeper analysis of time series data
 
-# Key Parameters Reported:
+# Key Parameters Reported
 
 ## Fish Metrics
 * Salmon CPUE
@@ -179,25 +187,27 @@ Farley et al. (1999, 2000a, 2001a, c)
 # Analysis Notebook
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, error = FALSE)
 library(hakaisalmon)
 library(tidyverse)
 library(lubridate)
 library(ggridges)
 ```
 
-## Migration Dynamics
+## Migration Dynamics {.tabset}
 
-### Migration Timing
+### Migration Timing and Abundance
+
+First I plot a point and line graph(+/- 1 SE) of the catch of fish averaged over 1 week. For surveys where the net was not set because no fish were observed, I converted those catches to zero from NA. So in effect the unit of effort for this CPUE calculation is a survey in which we look for fish. The following plot therefore aims to summarize timing and abundance in the same plot.
 
 ```{r MT averaged by week}
 cpue <-  select(survey_seines, survey_date, sampling_week, site_id, region, so_total) %>%
+   # Only include sites that have been consistently fished over the last few years. This is necessary because our survey effort at other sites was inconsistent.
   filter(site_id %in% c("D07", "D09", "D22", "D27", "D10", "D08", "D34",
                         "D20", "J03", "J02", "J09", "J11")) %>%
-  # I only included the above sites, because they have been consistent
-  # over the last few years.
   mutate(year = year(survey_date)) %>%
   select(-site_id, -survey_date) %>% 
+  # Replace surveys that have NA for sockeye, ie. when the net wasn't set from a survey, assume zero fish present
   replace_na(list(so_total = 0)) %>% 
   group_by(year, region, sampling_week) %>% 
   summarise_each(funs(mean, sd, cpue.se=sd(.) / sqrt(n())))
@@ -231,30 +241,36 @@ cpue_plot_error_bars <- ggplot(data = cpue, aes(x = sampling_week, y = mean,
 cpue_plot_error_bars
 ```
 
-In an effort to consider alternative methods to estimate run-timing I will
-consider here I suppose another method to be to take the average and standard
-deviations of each year and plot a normal distribution.
+### Migration Timing
+
+In an effort to paramaterize migration timing I assign a peak abundance date in each region by averaging the date of capture for the 218,242 fish that we have caught, and plot the mean and standard deviations according to a normal distriubtion. This plot then estimates migration timing, but not abundance as the height of the distribution is infuenced by the standard deviation, and not abundance.
+
 ```{r MT averaged by date}
-tidy_catch<- survey_seines %>% 
+
+tidy_catch <- survey_seines %>%
+  # remove ad-hoc collections from migration timing calcs
+  filter(survey_type == "standard") %>% 
   select(survey_date, seine_id, region, so_total, pi_total, cu_total, co_total, he_total) %>% 
   mutate(year = year(survey_date)) %>% 
-  drop_na(so_total) %>% # This removes instances when the net was not set
-  gather(`so_total`, `pi_total`, `cu_total`, `co_total`, `he_total`, key = "species",
-         value = "n") %>% 
+  # remove instances when the net was not set because no surface activity was observed
   drop_na() %>% 
-  filter(species == "so_total")
-    
-so_catch <- as.data.frame(tidy_catch)
+  gather(`so_total`, `pi_total`, `cu_total`, `co_total`, `he_total`, key = "species",
+         value = "n") 
 
-so_catch_expanded <- so_catch[rep(row.names(tidy_catch), tidy_catch$n), 1:5] %>% 
-  mutate(yday = yday(survey_date))
+tidy_catch <- as.data.frame(tidy_catch)
 
-so_mt <- so_catch_expanded %>% 
-  mutate(yday = yday(survey_date)) %>% 
+# Create one row for every fish ever caught based on a summary by seines
+catch_expanded <- tidy_catch[rep(row.names(tidy_catch), tidy_catch$n), 1:5] %>% 
+  mutate(yday = yday(survey_date), year = year(survey_date)) 
+
+# Calculare mean and standard deviation of the julian date of every fish caught
+so_mt <- catch_expanded %>% 
+  filter(species == "so_total") %>% 
   group_by(year, region) %>% 
              summarize(avg_date = mean(yday),
                        sd = round(sd(yday),0))
 
+# extract mean and sd
 di_mean_date_2015 <- as.numeric(so_mt[1,3])
 di_sd_2015 <- as.numeric(so_mt[1,4])
 js_mean_date_2015 <- as.numeric(so_mt[2,3])
@@ -270,6 +286,7 @@ js_sd_2017 <- as.numeric(so_mt[6,4])
 
 date_range <- tibble(dates = c(121:182))
 
+# Generate a normal distriubtion by random sampling a random normal distruvution based on annual mean capture date and sd
 di_sim_set <- tibble("2015" = rnorm(100000, di_mean_date_2015, di_sd_2015),
                       "2016" = rnorm(100000, di_mean_date_2016, di_sd_2016),
                       "2017" = rnorm(100000, di_mean_date_2017, di_sd_2017),
@@ -291,58 +308,38 @@ ggplot(sim_set, aes(x = yday, y = year, fill = year)) +
 # TODO format plot with axis breaks that are dates, and adjsut the side label,
 # to make it a top label.
 # TODO rm() all the outputs created from this chunk
+# TODO plot anual average?
+# TODO calculate average difference in days between regions
+
+diff <- c(so_mt[2,3] - so_mt[1,3], so_mt[4,3] - so_mt[3,3], so_mt[6,3] - so_mt[5,3])
+years <- c(2015, 2016, 2017)
+
+annual_peak_diff <- tibble(years, diff)
 ```
+
+### Migration Abundance
+
+To assess the abundance of each species I plot the average CPUE 
 
 ```{r CPUE}
 
-# TODO redo this code so that it calculates CPUE by year, by region by species
-# in a simple dplyr pipe chain
+annual_cpue <- tidy_catch %>% 
+  group_by(year, region, species) %>% 
+  summarize(mean = mean(n, na.rm = TRUE)) 
 
-# Calculate cpue by region annualy
-# DI
-di_n_sockeye_per_year <- so_catch_expanded %>% 
-  filter(region == "DI") %>% 
-  group_by(year, seine_id) %>% 
-  # count the number of fish from each seine
-  summarise(n = n()) %>% 
-  group_by(year) %>% 
-  # calculate the annual mean cpue
-  summarize(cpue = mean(n))
-
-di_cpue_2015 <- as.numeric(di_n_sockeye_per_year[1,2])
-di_cpue_2016 <- as.numeric(di_n_sockeye_per_year[2,2])
-di_cpue_2017 <- as.numeric(di_n_sockeye_per_year[3,2])
-# JS
-JS_n_sockeye_per_year <- so_catch_expanded %>% 
-  filter(region == "JS") %>% 
-  group_by(year, seine_id) %>% 
-  # count the number of fish from each seine
-  summarise(n = n()) %>% 
-  group_by(year) %>% 
-  # calculate the annual mean cpue
-  summarize(cpue = mean(n))
-
-JS_cpue_2015 <- as.numeric(JS_n_sockeye_per_year[1,2])
-JS_cpue_2016 <- as.numeric(JS_n_sockeye_per_year[2,2])
-JS_cpue_2017 <- as.numeric(JS_n_sockeye_per_year[3,2])
-
+ggplot(annual_cpue, aes(x = year, y = mean, fill = species)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  ylab("Mean CPUE") +
+  facet_grid(region ~.)
 ```
 
-```{r Species composition}
-tidy_catch<- survey_seines %>% 
-  select(survey_date, seine_id, so_total, pi_total, cu_total, co_total, he_total) %>% 
-  mutate(year = year(survey_date)) %>% 
-  drop_na(so_total) %>% # This removes instances when the net was not set
-  gather(`so_total`, `pi_total`, `cu_total`, `co_total`, `he_total`, key = "species",
-         value = "n") %>% 
-  drop_na()
+### Species Composition
 
-tidy_catch <- as.data.frame(tidy_catch)
-
-tidy_catch_expanded <- tidy_catch[rep(row.names(tidy_catch), tidy_catch$n), 1:4]
-proportions <- tidy_catch_expanded %>% 
-  group_by(year, species) %>% 
-  summarize(n = n()) %>% 
+Here I average the proportion each species contributed to the annual species composition. This is based only on instances when the net was set. 
+```{r}
+proportions <- catch_expanded %>%
+  group_by(year, species) %>%
+  summarize(n = n()) %>%
   mutate(proportion = n / sum(n)) %>%
   ungroup()
 
@@ -351,6 +348,23 @@ ggplot(data = proportions, aes(x = year, y = proportion, fill = species)) +
            
 ```
 
+# Heat Map
 
+It would be good to produce one plot to rule them all, one plot to bind them... anyways you get the point. I want one plot that summarizes annual parameters. 
+
+As a starting point these parameters should include:
+
+* CPUE
+* Peak migration date
+* Length
+* Motile sealice abundance
+* SST Temp
+* Sea-Surface salinity
+* Zooplankton biomass
+* Chl a
+* Nutrients
+* Phyto
+```{r}
+```
 
 
