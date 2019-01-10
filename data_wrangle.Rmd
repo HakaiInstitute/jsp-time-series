@@ -5,6 +5,10 @@ date: "October 16, 2018"
 output: html_document
 ---
 
+This script is meant to pre-process the data required for publishing the Hakai Institute Juvenile Salmon Program Time Series. Most of the data the data that are read in this file are from the `hakaisalmon` R package which contains all the program data. The `hakaisalmon` r package is versioned so that any changes to data are kept track of. The `hakaisalmon` r package is a private repository, mainly because a number of graduate students are currently depending on this data to publish their theses, and out of respect for their projects the data will be requestable, not publically accesible, until students publish their research. Access can be requested in the meantime however and we will likely grant access. Please see the package website [here](https://hakaiinstitute.github.io/hakaisalmon/). A DOI citable version of the data in the R package can be formall requested [here](http://dx.doi.org/10.21966/1.566666).
+
+A shiny app of these same data can be found [here](https://hecate.hakai.org/shiny/JSP/)
+
 ```{r setup}
 library(hakaisalmon) #v0.2.1
 library(tidyverse)
@@ -13,11 +17,35 @@ library(knitr)
 library(here)
 library(car)
 
-# This data warngling file should be the exact same for both the JSP shiny app and this manuscript
+# This same data warngling file should be used for the pdf report as well as the shiny app
 
 survey_seines <- hakaisalmon::survey_seines %>% 
-  mutate(year = year(survey_date)) %>% 
-  filter(sampling_week != "July 13")
+   # remove ad-hoc collections from migration timing calcs
+  filter(survey_type == "standard",
+         collection_protocol == "SEMSP",
+         set_type == "targeted") %>%
+  # only include consistently sampled sites with similar catchabilities
+  filter(
+    site_id %in% c(
+      "D07",
+      "D09",
+      "D22",
+      "D27",
+      "D10",
+      "D08",
+      "D34",
+      "D20",
+      "J03",
+      "J02",
+      "J09",
+      "J11"
+    )
+  ) %>%
+  mutate(year = year(survey_date),
+         yday = yday(survey_date)
+         ) %>% 
+  # filter out sampling events from beyond the normal sampling period. (May 1 - July 9)
+  filter(yday < 190) 
 
 saveRDS(survey_seines, here::here("data", "survey_seines.RDS"))
 write_csv(survey_seines, here::here("data", "survey_seines.csv"))
@@ -28,14 +56,17 @@ write_csv(survey_seines, here::here("data", "survey_seines.csv"))
 sealice_lab_motiles <- hakaisalmon::sealice_lab_motiles
 sealice_field <- hakaisalmon::sealice_field
 
-lab_lice <- left_join(survey_seines, hakaisalmon::fish_field_data) %>%
+lab_lice <-
+  left_join(survey_seines, hakaisalmon::fish_field_data) %>%
   left_join(sealice_lab_motiles) %>%
   drop_na(cm_lab) %>%
+  # lump all sexes and staged of adult caligus
   mutate(
     motile_caligus_lab = rowSums(
       select_(., "cm_lab", "cpaf_lab", "caf_lab", "cgf_lab", "ucal_lab"),
       na.rm = T
     ),
+    # lump all sexes and staged of adult leps
     motile_lep_lab = rowSums(
       select_(
         .,
@@ -60,7 +91,8 @@ lab_lice <- left_join(survey_seines, hakaisalmon::fish_field_data) %>%
     motile_lep_lab
   )
 
-field_lice <- left_join(survey_seines, hakaisalmon::fish_field_data) %>%
+field_lice <-
+  left_join(survey_seines, hakaisalmon::fish_field_data) %>%
   left_join(sealice_field) %>%
   # here I drop NAs from cm_field so that they wont be converted to zeros when rowSums na.rm = T coerces them to zero
   # the NAs will be created when I subsequently left_join
@@ -98,7 +130,7 @@ sealice_time_series <- motile_lice %>%
   # with preference to lab ID, combine field and lab ID columns into one column
   mutate(motile_caligus = coalesce(motile_caligus_lab, motile_caligus_field)) %>%
   mutate(motile_lep = coalesce(motile_lep_lab, motile_lep_field)) %>%
-  mutate(all_lice = motile_caligus + motile_lep) %>% 
+  mutate(all_lice = motile_caligus + motile_lep) %>%
   select(ufn,
          survey_date,
          site_id,
@@ -107,8 +139,6 @@ sealice_time_series <- motile_lice %>%
          motile_lep,
          motile_caligus,
          all_lice) %>%
-  mutate(sampling_week = as.numeric((yday(survey_date) + 4) %/% 7)) %>%
-  filter(sampling_week <= 28, species %in% c("SO", "PI", "CU")) %>%
   filter(
     site_id %in% c(
       "D07",
@@ -131,11 +161,12 @@ sealice_time_series <- motile_lice %>%
          key = louse_species,
          value = n_lice) %>%
   drop_na() %>%
-  mutate(year = year(survey_date),
-         sampling_week = as.numeric((yday(survey_date) + 4) %/% 7))
+  mutate(year = year(survey_date)
+  )
 
 write.csv(sealice_time_series, here("data", "sealice_time_series.csv"))
 saveRDS(sealice_time_series, here("data", "sealice_time_series.RDS"))
+
 
 ## Generate sealice prevalence column
 motile_infected_hosts <- sealice_time_series %>%
@@ -153,33 +184,35 @@ summary_sealice <- left_join(hosts, motile_infected_hosts) %>%
   mutate(prevalence = n_infected /  n) %>%
   select(-n_infected)
 
-## Generate abundance column for summary_sealice
+# Generate abundance column for summary_sealice
 abundance <- sealice_time_series %>%
   select(year, region, species, louse_species, n_lice) %>%
   group_by(year, region, species, louse_species) %>%
-  summarise(abundance = mean(n_lice, na.rm = T), n = n(), abundance_sd = sd(n_lice))
+  summarise(
+    abundance = mean(n_lice, na.rm = T),
+    n = n(),
+    abundance_sd = sd(n_lice)
+  )
 
 summary_sealice <- left_join(summary_sealice, abundance)
 
-## Generate intensity column
+# Generate intensity column
 intensity <- sealice_time_series %>%
   filter(n_lice > 0) %>%
   select(year, region, species, louse_species, n_lice) %>%
-  group_by(year, region, species, louse_species) %>% 
+  group_by(year, region, species, louse_species) %>%
   summarise(intensity =  mean(n_lice, na.rm = T))
 
 summary_sealice <- left_join(summary_sealice, intensity)
-
-
 
 saveRDS(summary_sealice, here::here("data", "summary_sealice.RDS"))
 write_csv(summary_sealice, here::here("data", "summary_sealice.csv"))
 ```
 
 ```{r SST}
-## Get CTD data from EIMS database using R API
+# Get CTD data from EIMS database using R API
 
-# Run this line indpendently,check console for URL, and authorize
+# Run this line indpendently, check console for URL, and authorize
 client <- hakaiApi::Client$new()
 
 qu39_endpoint <-
@@ -215,7 +248,6 @@ js2_all <- client$get(js2_endpoint)  %>%
     date = as_date(start_dt),
     yday = yday(start_dt)
   )
-
 
 js12_endpoint <-
   sprintf("%s/%s",
@@ -308,7 +340,9 @@ sim_temp_data_qu39$predicted_mean_temp <-
 
 # Create a linear interpolation of points that have zero difference between
 # loess model and 'observed data' so that an area plot will look right
-# manually identify intersections and create values that fall on the line
+# manually identify intersections and create values that fall on the line so that colour of plot will change above and below the trend line.
+# This code will have to be re-written manually to interpolate the mid points of when current year points cross over the trendline
+# See https://stackoverflow.com/questions/27135962/how-to-fill-geom-polygon-with-different-colors-above-and-below-y-0
 qu39_temp_anomaly_data <-
   left_join(sim_temp_data_qu39, qu39_this_year) %>%
   mutate(diff = if_else(mean_temp > predicted_mean_temp, "pos", "neg")) %>%
@@ -378,7 +412,6 @@ sim_temp_data_qu29 <-
 sim_temp_data_qu29$predicted_mean_temp <-
   predict(temp.lo_qu29, sim_temp_data_qu29, SE = T)
 
-
 # Create a linear interpolation of points that have zero difference between
 # loess model and 'observed data' so that an area plot will look right
 # manually identify intersections and create values that fall on the line
@@ -416,7 +449,7 @@ qu29_min_max <- qu29_all %>%
             max_temp = max(mean_temp)) %>%
   mutate(station = "QU29")
 
-## JS2+12
+# JS2+12
 js2_12_average <- ctd_all %>%
   filter(station == "js2_12")
 
@@ -477,16 +510,16 @@ write_csv(temperature_anomaly_data,
 ```
 
 ```{r Catch Intensity}
+# In 2015 and 2016 we only enumerated seines with sockeye. In 2017 onwards we enumerated catch of all seines even if they didn't have sockeye. This created a problem because from those first two years of the program we only have pink and chum abundance measurements when they were caught with sockeye. So the only inter-annual comparable abundance parameter across years is 'intensity'— the number of sockeye, pink, and chum that were caught when greater than zero sockeye were caught.
+
 catch_intensity <- survey_seines %>% 
-  rename("Sockeye" = "so_total", "Pink" = "pi_total", "Chum" = "cu_total") %>% 
-  # In 2015 and 2016 we only enumerated seines with sockeye, so the only comparable abundance parameter across years is 'intensity'— the number of sockeye pink and chum that were caught when greater than zero sockeye were caught.
+  rename("Sockeye" = "so_total", "Pink" = "pi_total", "Chum" = "cu_total") %>%
+  # remove seines that did not catch any sockeye, even if they caught other spp
   filter(Sockeye > 0) %>% 
   select(year, Sockeye, Pink, Chum) %>% 
   gather(key = species, value = catch, - year) %>% 
+  # Filter out catches where no pink and chum were caught, so that catch intensity is consistent for each species. Ie. catch intensity for sockeye is the average number of sockeye when catch of sockeye is > 0, catch intensity of pink is the average number of pink caught when > 1 pink was caught, and so on for chum as well.
   filter(catch > 0)
-
-catch_intensity$species <- catch_intensity$species %>% 
-  fct_relevel("Sockeye", "Pink", "Chum")
 
 catch_intensity <- catch_intensity %>% 
   group_by(year, species) %>% 
@@ -500,34 +533,13 @@ catch_intensity <- catch_intensity %>%
   mutate_if(is.numeric, round)
 
 write_csv(catch_intensity, here::here("data", "catch_intensity.csv"))
+saveRDS(catch_intensity, here::here("data", "catch_intensity.RDS"))
 ```
 
-
 ```{r Migration Timing}
-#CUMULATIVE ABUNDANCE
+# Cumulative abundance
 
 tidy_catch <- survey_seines %>%
-  # remove ad-hoc collections from migration timing calcs
-  filter(survey_type == "standard",
-         collection_protocol == "SEMSP",
-         set_type == "targeted") %>%
-  # only include consistently sampled sites with similar catchabilities
-  filter(
-    site_id %in% c(
-      "D07",
-      "D09",
-      "D22",
-      "D27",
-      "D10",
-      "D08",
-      "D34",
-      "D20",
-      "J03",
-      "J02",
-      "J09",
-      "J11"
-    )
-  ) %>%
   select(
     survey_date,
     seine_id,
@@ -536,10 +548,7 @@ tidy_catch <- survey_seines %>%
     pi_total,
     cu_total,
     co_total,
-    he_total,
-    lat,
-    lon,
-    sampling_week
+    he_total
   ) %>%
   mutate(year = year(survey_date)) %>%
   gather(
@@ -762,27 +771,6 @@ write_csv(predict_average_prop,
 # SPECIES PROPORTIONS
 
 spp_prop <- survey_seines %>%
-  # remove ad-hoc collections from migration timing calcs
-  filter(survey_type == "standard",
-         collection_protocol == "SEMSP",
-         set_type == "targeted") %>%
-  # only include consistently sampled sites with similar catchabilities
-  filter(
-    site_id %in% c(
-      "D07",
-      "D09",
-      "D22",
-      "D27",
-      "D10",
-      "D08",
-      "D34",
-      "D20",
-      "J03",
-      "J02",
-      "J09",
-      "J11"
-    )
-  ) %>%
   select(
     survey_date,
     seine_id,
@@ -791,13 +779,9 @@ spp_prop <- survey_seines %>%
     pi_total,
     cu_total,
     co_total,
-    he_total,
-    sampling_week
+    he_total
   ) %>%
-  # Next I remove instances when no sockeye were caught. I'm doing this because in 2015
-  # and 2016 we only enumerated catches in which we caught sockeye, whereas in
-  # 2017 and 2018 we enumerated all seines. So to reduce the bias introduced
-  # from the field method i filter the comparison down to what is comparable
+  # Next I remove instances when no sockeye were caught. I'm doing this because in 2015 and 2016 we only enumerated catches in which we caught sockeye, whereas in 2017 and 2018 we enumerated all seines. So to reduce the bias introduced from the field method i filter the comparison down to what is comparable
   filter(so_total > 0) %>%
   # remove instances when not all species were enumerated by droping rows with NA
   drop_na() %>%
@@ -830,28 +814,8 @@ write_csv(proportions, here::here("data", "proportion.csv"))
 ```{r Heatmap}
 # HEATMAP Create heatmaps for key parameters
 
-#calculate migration date z-scores
-
+# Calculate migration date z-scores
 tidy_catch <- survey_seines %>%
-  filter(survey_type == "standard", collection_protocol == "SEMSP") %>%
-  filter(set_type == "targeted") %>%
-  # only include consistently sampled sites with similar catchabilities
-  filter(
-    site_id %in% c(
-      "D07",
-      "D09",
-      "D22",
-      "D27",
-      "D10",
-      "D08",
-      "D34",
-      "D20",
-      "J03",
-      "J02",
-      "J09",
-      "J11"
-    )
-  )  %>%
   select(survey_date,
          seine_id,
          region,
@@ -900,7 +864,7 @@ fish_data <- left_join(hakaisalmon::fish_field_data, hakaisalmon::fish_lab_data)
   )
 
 length_histo <- left_join(survey_seines, fish_data)  %>%
-  select(sampling_week, survey_date, region, species, fork_length) %>%
+  select(survey_date, region, species, fork_length) %>%
   drop_na(fork_length) %>%
   mutate(year = year(survey_date)) %>%
   # Remove incidtentaly sampled species

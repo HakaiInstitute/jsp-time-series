@@ -143,8 +143,9 @@ calculated for all years combined, and the z-score was calculated for
 each parameter to determine the number of standard deviations away from
 the mean a given parameter was in each year. Measurements from the
 Discovery Islands and Johnstone Strait regions of the salmon migration
-were combined in analyses unless otherwise indicated. All analyses were
-conducted using R (R Core Team 2017).
+were combined in analyses unless otherwise indicated. Only sites that
+were sampled in all years were used. All analyses were conducted using R
+(R Core Team 2017).
 
 The peak migration date for each species was estimated by calculating
 the median date of capture in the Discovery Islands. This method was
@@ -162,10 +163,11 @@ were included in the calculation of the pink time series average.
 
 Catch intensity was calculated to provide a measure of inter-annual
 abundance for sockeye, pink, and chum. Catch intensity was defined as
-the average number of fish captured when greater than 1 sockeye was
-caught. In effect, catch intensity summarizes the abundance of each
-species in a community of co-migrating sockeye, pink, and chum when
-sockeye are always present.
+the average number of a species caught when \textgreater{} 1 of that
+particular species was caught, and when sockeye were also caught. In
+effect, catch intensity summarizes the abundance of each species in a
+community of co-migrating sockeye, pink, and chum when sockeye are
+present.
 
 Species proportions were calculated by dividing the total number of each
 species caught, by the sum of all species caught that season. Only
@@ -221,8 +223,8 @@ environment for pink salmon relative to 2016---the only other odd-year
 dominant brood year recorded by the Juvenile Salmon Program.
 
 Pink salmon dominated the catch in the Discovery Islands and Johnstone
-in 2018 making up 51.9 \% of the catch (Table \ref{tab:proptable}) while
-chum made up 32.4 \% and sockeye 12.9 \% (Figure \ref{fig:prop}). This
+in 2018 making up 51.5 \% of the catch (Table \ref{tab:proptable}) while
+chum made up 32.6 \% and sockeye 13.1 \% (Figure \ref{fig:prop}). This
 was the first time in the time series that pink dominated the catch
 proportion.
 
@@ -230,12 +232,13 @@ Fish lengths varied between regions, species and year (Figure
 \ref{fig:lengthplot}) though in 2018 sockeye were longer, pink were
 shorter, and chum were shorter than their respective time series
 averages in the Discovery Islands and Johnstone Strait combined. Sockeye
-length was 116.9 mm (Table \ref{tab:length}), which is 8.9 mm longer
-than the time series average (\emph{p} \textless{} 0.0001, 95\% CI 6.2
---11.7). Average pink lengths were 96.3 mm, which is 8.8 mm shorter than
+length was 116.9 mm (Table \ref{tab:length}), which is 8.3 mm longer
+than the time series average (\emph{p} \textless{} 0.0001, 95\% CI 5.5
+--11.2). Average pink lengths were 96.4 mm, which is 9.5 mm shorter than
 the time series average (\emph{p} \textless{} 0.0001, 95\% CI
-10.9--6.7). Chum were on average 103.4 mm, which is 7 mm shorter than
-the time series average (\emph{p} \textless{} 0.0001, 95\% CI 8.9---5).
+11.8--7.2). Chum were on average 103.5 mm, which is 7.9 mm shorter than
+the time series average (\emph{p} \textless{} 0.0001, 95\% CI
+9.9---5.8).
 
 The abundance of motile sea lice in 2018 was the among the lowest
 recorded in the Discovery Islands time-series while Johnstone Strait
@@ -302,50 +305,50 @@ Year & Parameter & Z-score\tabularnewline
 2016 & Sockeye Migration Timing & 0.00\tabularnewline
 2017 & Sockeye Migration Timing & 1.41\tabularnewline
 2018 & Sockeye Migration Timing & -0.71\tabularnewline
-2015 & Sockeye Catch Intensity & 0.80\tabularnewline
-2016 & Sockeye Catch Intensity & 0.93\tabularnewline
-2017 & Sockeye Catch Intensity & -0.89\tabularnewline
-2018 & Sockeye Catch Intensity & -0.84\tabularnewline
-2015 & Sockeye Length & -0.29\tabularnewline
-2016 & Sockeye Length & -1.28\tabularnewline
-2017 & Sockeye Length & 0.95\tabularnewline
-2018 & Sockeye Length & 0.62\tabularnewline
+2015 & Sockeye Catch Intensity & 0.68\tabularnewline
+2016 & Sockeye Catch Intensity & 1.03\tabularnewline
+2017 & Sockeye Catch Intensity & -0.77\tabularnewline
+2018 & Sockeye Catch Intensity & -0.94\tabularnewline
+2015 & Sockeye Length & -0.20\tabularnewline
+2016 & Sockeye Length & -1.32\tabularnewline
+2017 & Sockeye Length & 0.94\tabularnewline
+2018 & Sockeye Length & 0.58\tabularnewline
 2015 & Sockeye Parasite Loads & 1.40\tabularnewline
 2016 & Sockeye Parasite Loads & 0.03\tabularnewline
 2017 & Sockeye Parasite Loads & -0.69\tabularnewline
-2018 & Sockeye Parasite Loads & -0.75\tabularnewline
+2018 & Sockeye Parasite Loads & -0.74\tabularnewline
 2015 & Pink Migration Timing & 1.43\tabularnewline
 2016 & Pink Migration Timing & -0.16\tabularnewline
 2017 & Pink Migration Timing & -0.89\tabularnewline
 2018 & Pink Migration Timing & -0.38\tabularnewline
-2015 & Pink Catch Intensity & -0.65\tabularnewline
-2016 & Pink Catch Intensity & 0.16\tabularnewline
-2017 & Pink Catch Intensity & -0.86\tabularnewline
-2018 & Pink Catch Intensity & 1.35\tabularnewline
-2015 & Pink Length & 1.30\tabularnewline
-2016 & Pink Length & 0.06\tabularnewline
-2017 & Pink Length & -0.24\tabularnewline
-2018 & Pink Length & -1.12\tabularnewline
-2015 & Pink Parasite Loads & 0.77\tabularnewline
-2016 & Pink Parasite Loads & -1.23\tabularnewline
-2017 & Pink Parasite Loads & 0.86\tabularnewline
-2018 & Pink Parasite Loads & -0.40\tabularnewline
+2015 & Pink Catch Intensity & -0.48\tabularnewline
+2016 & Pink Catch Intensity & -0.26\tabularnewline
+2017 & Pink Catch Intensity & -0.73\tabularnewline
+2018 & Pink Catch Intensity & 1.47\tabularnewline
+2015 & Pink Length & 1.20\tabularnewline
+2016 & Pink Length & -0.09\tabularnewline
+2017 & Pink Length & 0.14\tabularnewline
+2018 & Pink Length & -1.24\tabularnewline
+2015 & Pink Parasite Loads & 0.76\tabularnewline
+2016 & Pink Parasite Loads & -1.19\tabularnewline
+2017 & Pink Parasite Loads & 0.89\tabularnewline
+2018 & Pink Parasite Loads & -0.46\tabularnewline
 2015 & Chum Migration Timing & -1.09\tabularnewline
 2016 & Chum Migration Timing & 0.06\tabularnewline
 2017 & Chum Migration Timing & 1.32\tabularnewline
 2018 & Chum Migration Timing & -0.29\tabularnewline
-2015 & Chum Catch Intensity & 0.98\tabularnewline
-2016 & Chum Catch Intensity & -1.32\tabularnewline
-2017 & Chum Catch Intensity & 0.52\tabularnewline
-2018 & Chum Catch Intensity & -0.18\tabularnewline
-2015 & Chum Length & 1.41\tabularnewline
-2016 & Chum Length & -0.25\tabularnewline
-2017 & Chum Length & -0.23\tabularnewline
-2018 & Chum Length & -0.94\tabularnewline
-2015 & Chum Parasite Loads & 1.03\tabularnewline
-2016 & Chum Parasite Loads & -1.37\tabularnewline
-2017 & Chum Parasite Loads & 0.22\tabularnewline
-2018 & Chum Parasite Loads & 0.12\tabularnewline
+2015 & Chum Catch Intensity & -0.37\tabularnewline
+2016 & Chum Catch Intensity & -1.25\tabularnewline
+2017 & Chum Catch Intensity & 0.74\tabularnewline
+2018 & Chum Catch Intensity & 0.87\tabularnewline
+2015 & Chum Length & 1.19\tabularnewline
+2016 & Chum Length & -0.44\tabularnewline
+2017 & Chum Length & 0.36\tabularnewline
+2018 & Chum Length & -1.12\tabularnewline
+2015 & Chum Parasite Loads & 1.24\tabularnewline
+2016 & Chum Parasite Loads & -1.20\tabularnewline
+2017 & Chum Parasite Loads & 0.00\tabularnewline
+2018 & Chum Parasite Loads & -0.04\tabularnewline
 2015 & SST & -0.15\tabularnewline
 2016 & SST & -0.09\tabularnewline
 2017 & SST & -1.09\tabularnewline
@@ -399,18 +402,18 @@ Year & Species & Catch Intensity\tabularnewline
 Year & Species & Catch Intensity\tabularnewline
 \midrule
 \endhead
-2015 & Sockeye & 355\tabularnewline
-2015 & Pink & 50\tabularnewline
-2015 & Chum & 377\tabularnewline
-2016 & Sockeye & 376\tabularnewline
-2016 & Pink & 208\tabularnewline
-2016 & Chum & 175\tabularnewline
-2017 & Sockeye & 90\tabularnewline
-2017 & Pink & 9\tabularnewline
-2017 & Chum & 337\tabularnewline
-2018 & Sockeye & 99\tabularnewline
-2018 & Pink & 438\tabularnewline
-2018 & Chum & 275\tabularnewline
+2015 & Sockeye & 272\tabularnewline
+2015 & Pink & 65\tabularnewline
+2015 & Chum & 195\tabularnewline
+2016 & Sockeye & 307\tabularnewline
+2016 & Pink & 110\tabularnewline
+2016 & Chum & 113\tabularnewline
+2017 & Sockeye & 131\tabularnewline
+2017 & Pink & 11\tabularnewline
+2017 & Chum & 299\tabularnewline
+2018 & Sockeye & 114\tabularnewline
+2018 & Pink & 475\tabularnewline
+2018 & Chum & 311\tabularnewline
 \bottomrule
 \end{longtable}
 
@@ -428,36 +431,36 @@ Year & Region & Species & n & Fork Length (mm) & 95\% CI\tabularnewline
 Year & Region & Species & n & Fork Length (mm) & 95\% CI\tabularnewline
 \midrule
 \endhead
-2015 - 2018 & DI & SO & 4 & 110.9 & 95.9 - 125.9\tabularnewline
-2015 - 2018 & DI & PI & 4 & 98.0 & 81.3 - 114.7\tabularnewline
-2015 - 2018 & DI & CU & 4 & 105.1 & 91.3 - 118.9\tabularnewline
-2015 - 2018 & JS & SO & 4 & 112.5 & 101.2 - 123.8\tabularnewline
-2015 - 2018 & JS & PI & 4 & 116.7 & 105.6 - 127.8\tabularnewline
-2015 - 2018 & JS & CU & 4 & 118.2 & 110.1 - 126.3\tabularnewline
-2015 & DI & SO & 660 & 108.0 & 107.1 - 108.9\tabularnewline
-2015 & DI & PI & 56 & 109.6 & 104.9 - 114.3\tabularnewline
-2015 & DI & CU & 157 & 117.3 & 114.9 - 119.7\tabularnewline
-2015 & JS & SO & 832 & 110.6 & 109.9 - 111.3\tabularnewline
-2015 & JS & PI & 105 & 126.9 & 124.8 - 129\tabularnewline
-2015 & JS & CU & 134 & 125.4 & 123.5 - 127.3\tabularnewline
-2016 & DI & SO & 652 & 99.0 & 98.1 - 99.9\tabularnewline
+2015 - 2018 & DI & SO & 4 & 111.0 & 94.6 - 127.4\tabularnewline
+2015 - 2018 & DI & PI & 4 & 98.0 & 81.5 - 114.5\tabularnewline
+2015 - 2018 & DI & CU & 4 & 105.6 & 93.6 - 117.6\tabularnewline
+2015 - 2018 & JS & SO & 4 & 112.3 & 99.4 - 125.2\tabularnewline
+2015 - 2018 & JS & PI & 4 & 117.3 & 106.3 - 128.3\tabularnewline
+2015 - 2018 & JS & CU & 4 & 119.1 & 110.1 - 128.1\tabularnewline
+2015 & DI & SO & 455 & 108.9 & 107.9 - 109.9\tabularnewline
+2015 & DI & PI & 47 & 109.6 & 104.1 - 115.1\tabularnewline
+2015 & DI & CU & 121 & 115.5 & 112.7 - 118.3\tabularnewline
+2015 & JS & SO & 334 & 110.7 & 109.5 - 111.9\tabularnewline
+2015 & JS & PI & 98 & 127.1 & 124.9 - 129.3\tabularnewline
+2015 & JS & CU & 112 & 126.4 & 124.4 - 128.4\tabularnewline
+2016 & DI & SO & 516 & 97.6 & 96.7 - 98.5\tabularnewline
 2016 & DI & PI & 96 & 103.9 & 101.3 - 106.5\tabularnewline
 2016 & DI & CU & 124 & 103.3 & 100.7 - 105.9\tabularnewline
-2016 & JS & SO & 720 & 103.4 & 102.6 - 104.2\tabularnewline
+2016 & JS & SO & 316 & 101.5 & 100.4 - 102.6\tabularnewline
 2016 & JS & PI & 94 & 112.6 & 110.7 - 114.5\tabularnewline
 2016 & JS & CU & 104 & 115.0 & 112.9 - 117.1\tabularnewline
-2017 & DI & SO & 269 & 120.1 & 118 - 122.2\tabularnewline
+2017 & DI & SO & 260 & 121.3 & 119.3 - 123.3\tabularnewline
 2017 & DI & PI & 17 & 90.9 & 82.3 - 99.5\tabularnewline
-2017 & DI & CU & 123 & 103.0 & 100.2 - 105.8\tabularnewline
-2017 & JS & SO & 181 & 118.8 & 117.2 - 120.4\tabularnewline
-2017 & JS & PI & 24 & 115.3 & 112.8 - 117.8\tabularnewline
-2017 & JS & CU & 76 & 118.2 & 116 - 120.4\tabularnewline
-2018 & DI & SO & 89 & 116.4 & 112.9 - 119.9\tabularnewline
-2018 & DI & PI & 229 & 87.4 & 85.8 - 89\tabularnewline
-2018 & DI & CU & 211 & 96.7 & 94.6 - 98.8\tabularnewline
-2018 & JS & SO & 87 & 117.4 & 113.1 - 121.7\tabularnewline
-2018 & JS & PI & 130 & 111.9 & 110.3 - 113.5\tabularnewline
-2018 & JS & CU & 130 & 114.3 & 112.7 - 115.9\tabularnewline
+2017 & DI & CU & 111 & 106.2 & 103.8 - 108.6\tabularnewline
+2017 & JS & SO & 220 & 119.4 & 118 - 120.8\tabularnewline
+2017 & JS & PI & 51 & 117.1 & 115.2 - 119\tabularnewline
+2017 & JS & CU & 151 & 120.7 & 119.1 - 122.3\tabularnewline
+2018 & DI & SO & 84 & 116.2 & 112.6 - 119.8\tabularnewline
+2018 & DI & PI & 205 & 87.8 & 86 - 89.6\tabularnewline
+2018 & DI & CU & 190 & 97.4 & 95.1 - 99.7\tabularnewline
+2018 & JS & SO & 85 & 117.6 & 113.2 - 122\tabularnewline
+2018 & JS & PI & 110 & 112.4 & 110.6 - 114.2\tabularnewline
+2018 & JS & CU & 110 & 114.2 & 112.4 - 116\tabularnewline
 \bottomrule
 \end{longtable}
 
@@ -476,7 +479,7 @@ Year & Chum & Coho & Herring & Pink & Sockeye\tabularnewline
 2015 & 0.378 & 0.003 & 0.009 & 0.072 & 0.537\tabularnewline
 2016 & 0.210 & 0.006 & 0.005 & 0.200 & 0.580\tabularnewline
 2017 & 0.661 & 0.018 & 0.008 & 0.012 & 0.301\tabularnewline
-2018 & 0.324 & 0.006 & 0.022 & 0.519 & 0.129\tabularnewline
+2018 & 0.326 & 0.006 & 0.022 & 0.515 & 0.131\tabularnewline
 \bottomrule
 \end{longtable}
 
@@ -497,65 +500,105 @@ Year & Region & Species & n & Abundance, 95\% CI & Prevalence, 95\% CI &
 Intensity, 95\% CI\tabularnewline
 \midrule
 \endhead
-2015 - 2018 & DI & CU & 669 & 0.39 +/- 0.01 & 0.28 +/- 0.01 & 1.41 +/-
+2015 - 2018 & DI & CK & 3 & 0.33 +/- NA & 0.33 +/- NA & 1 +/-
+NA\tabularnewline
+2015 - 2018 & JS & CK & 3 & 0.33 +/- NA & 0.33 +/- NA & 1 +/-
+NA\tabularnewline
+2015 - 2018 & DI & CO & 57 & 0.79 +/- 0.12 & NA +/- NA & 1.55 +/-
+0.13\tabularnewline
+2015 - 2018 & JS & CO & 127 & 0.85 +/- 0.06 & 0.5 +/- 0.03 & 1.65 +/-
+0.04\tabularnewline
+2015 - 2018 & DI & CU & 638 & 0.37 +/- 0.01 & 0.27 +/- 0.01 & 1.36 +/-
 0.01\tabularnewline
-2015 - 2018 & JS & CU & 469 & 0.48 +/- 0.01 & 0.33 +/- 0.01 & 1.43 +/-
+2015 - 2018 & JS & CU & 449 & 0.46 +/- 0.01 & 0.32 +/- 0.01 & 1.39 +/-
 0.01\tabularnewline
-2015 - 2018 & DI & PI & 445 & 0.73 +/- 0.06 & 0.38 +/- 0.02 & 1.7 +/-
+2015 - 2018 & DI & HE & 113 & 0.49 +/- 0.03 & 0.39 +/- 0.01 & 1.25 +/-
+0.03\tabularnewline
+2015 - 2018 & JS & HE & 138 & 0.58 +/- 0.05 & 0.36 +/- 0.02 & 1.55 +/-
+0.03\tabularnewline
+2015 - 2018 & DI & PI & 420 & 0.74 +/- 0.06 & 0.39 +/- 0.02 & 1.7 +/-
 0.05\tabularnewline
-2015 - 2018 & JS & PI & 410 & 0.92 +/- 0.02 & 0.6 +/- 0.01 & 1.55 +/-
+2015 - 2018 & JS & PI & 390 & 0.9 +/- 0.02 & 0.58 +/- 0.01 & 1.54 +/-
 0.01\tabularnewline
-2015 - 2018 & DI & SO & 1396 & 0.37 +/- 0.01 & 0.26 +/- 0.01 & 1.36 +/-
+2015 - 2018 & DI & SO & 1391 & 0.37 +/- 0.01 & 0.26 +/- 0.01 & 1.37 +/-
 0.01\tabularnewline
-2015 - 2018 & JS & SO & 937 & 0.44 +/- 0.02 & 0.31 +/- 0.01 & 1.38 +/-
+2015 - 2018 & JS & SO & 935 & 0.44 +/- 0.02 & 0.31 +/- 0.01 & 1.38 +/-
 0.01\tabularnewline
+2015 & DI & CO & 32 & 1.31 +/- 0.47 & 0.69+/-0.5 & 1.91 +/-
+0.51\tabularnewline
 2015 & DI & CU & 179 & 0.58 +/- 0.14 & 0.4+/-0.33 & 1.44 +/-
 0.22\tabularnewline
+2015 & DI & HE & 62 & 0.44 +/- 0.18 & 0.34+/-0.22 & 1.29 +/-
+0.29\tabularnewline
 2015 & DI & PI & 60 & 1.73 +/- 0.4 & 0.72+/-0.59 & 2.42 +/-
 0.4\tabularnewline
 2015 & DI & SO & 425 & 0.68 +/- 0.09 & 0.43+/-0.38 & 1.58 +/-
 0.14\tabularnewline
+2015 & JS & CO & 46 & 0.96 +/- 0.36 & 0.52+/-0.37 & 1.83 +/-
+0.46\tabularnewline
 2015 & JS & CU & 122 & 0.55 +/- 0.15 & 0.37+/-0.28 & 1.49 +/-
 0.23\tabularnewline
+2015 & JS & HE & 77 & 0.38 +/- 0.16 & 0.27+/-0.18 & 1.38 +/-
+0.27\tabularnewline
 2015 & JS & PI & 127 & 0.94 +/- 0.18 & 0.57+/-0.48 & 1.64 +/-
 0.19\tabularnewline
 2015 & JS & SO & 348 & 0.74 +/- 0.11 & 0.46+/-0.4 & 1.63 +/-
 0.16\tabularnewline
+2016 & DI & CO & 14 & 0.64 +/- 0.49 & 0.5+/-0.23 & 1.29 +/-
+0.7\tabularnewline
 2016 & DI & CU & 139 & 0.29 +/- 0.13 & 0.19+/-0.13 & 1.52 +/-
 0.44\tabularnewline
+2016 & DI & HE & 34 & 0.38 +/- 0.19 & 0.35+/-0.2 & 1.08 +/-
+0.18\tabularnewline
 2016 & DI & PI & 126 & 0.36 +/- 0.13 & 0.24+/-0.17 & 1.5 +/-
 0.25\tabularnewline
 2016 & DI & SO & 611 & 0.31 +/- 0.05 & 0.23+/-0.2 & 1.37 +/-
 0.12\tabularnewline
+2016 & JS & CO & 40 & 1.1 +/- 0.35 & 0.65+/-0.48 & 1.69 +/-
+0.37\tabularnewline
 2016 & JS & CU & 127 & 0.39 +/- 0.15 & 0.28+/-0.21 & 1.36 +/-
 0.37\tabularnewline
+2016 & JS & HE & 21 & 0.43 +/- 0.37 & 0.29+/-0.11 & 1.5 +/-
+0.88\tabularnewline
 2016 & JS & PI & 123 & 0.68 +/- 0.15 & 0.49+/-0.4 & 1.4 +/-
 0.17\tabularnewline
 2016 & JS & SO & 311 & 0.54 +/- 0.1 & 0.35+/-0.3 & 1.53 +/-
 0.17\tabularnewline
-2017 & DI & CU & 140 & 0.49 +/- 0.15 & 0.34+/-0.26 & 1.42 +/-
-0.29\tabularnewline
-2017 & DI & PI & 30 & 0.5 +/- 0.32 & 0.33+/-0.17 & 1.5 +/-
+2017 & DI & CK & 3 & 0.33 +/- 1.43 & 0.33+/-0.01 & 1 +/-
+NaN\tabularnewline
+2017 & DI & CO & 9 & 0.22 +/- 0.51 & 0.11+/-0 & 2 +/- NaN\tabularnewline
+2017 & DI & CU & 130 & 0.38 +/- 0.11 & 0.32+/-0.24 & 1.22 +/-
+0.18\tabularnewline
+2017 & DI & HE & 17 & 0.65 +/- 0.4 & 0.47+/-0.23 & 1.38 +/-
+0.43\tabularnewline
+2017 & DI & PI & 29 & 0.52 +/- 0.33 & 0.34+/-0.18 & 1.5 +/-
 0.61\tabularnewline
 2017 & DI & SO & 271 & 0.28 +/- 0.07 & 0.22+/-0.17 & 1.25 +/-
 0.13\tabularnewline
+2017 & JS & CK & 3 & 0.33 +/- 1.43 & 0.33+/-0.01 & 1 +/-
+NaN\tabularnewline
+2017 & JS & CO & 41 & 0.49 +/- 0.27 & 0.34+/-0.2 & 1.43 +/-
+0.49\tabularnewline
 2017 & JS & CU & 90 & 0.36 +/- 0.14 & 0.27+/-0.18 & 1.33 +/-
 0.27\tabularnewline
+2017 & JS & HE & 40 & 0.92 +/- 0.34 & 0.52+/-0.36 & 1.76 +/-
+0.38\tabularnewline
 2017 & JS & PI & 30 & 1.23 +/- 0.35 & 0.77+/-0.58 & 1.61 +/-
 0.31\tabularnewline
 2017 & JS & SO & 191 & 0.23 +/- 0.07 & 0.2+/-0.14 & 1.16 +/-
 0.12\tabularnewline
-2018 & DI & CU & 211 & 0.21 +/- 0.07 & 0.17+/-0.12 & 1.25 +/-
-0.2\tabularnewline
-2018 & DI & PI & 229 & 0.34 +/- 0.09 & 0.25+/-0.19 & 1.37 +/-
+2018 & DI & CO & 2 & 1 +/- 0 & NA & 1 +/- 0\tabularnewline
+2018 & DI & CU & 190 & 0.23 +/- 0.08 & 0.18+/-0.13 & 1.26 +/-
+0.21\tabularnewline
+2018 & DI & PI & 205 & 0.37 +/- 0.09 & 0.27+/-0.21 & 1.36 +/-
 0.16\tabularnewline
-2018 & DI & SO & 89 & 0.22 +/- 0.11 & 0.18+/-0.11 & 1.25 +/-
-0.31\tabularnewline
-2018 & JS & CU & 130 & 0.61 +/- 0.17 & 0.4+/-0.32 & 1.52 +/-
-0.28\tabularnewline
-2018 & JS & PI & 130 & 0.84 +/- 0.17 & 0.55+/-0.46 & 1.54 +/-
-0.2\tabularnewline
-2018 & JS & SO & 87 & 0.26 +/- 0.11 & 0.22+/-0.14 & 1.21 +/-
+2018 & DI & SO & 84 & 0.21 +/- 0.12 & 0.17+/-0.09 & 1.29 +/-
+0.35\tabularnewline
+2018 & JS & CU & 110 & 0.53 +/- 0.17 & 0.38+/-0.29 & 1.38 +/-
+0.29\tabularnewline
+2018 & JS & PI & 110 & 0.76 +/- 0.18 & 0.5+/-0.4 & 1.53 +/-
+0.23\tabularnewline
+2018 & JS & SO & 85 & 0.27 +/- 0.12 & 0.22+/-0.14 & 1.21 +/-
 0.2\tabularnewline
 \bottomrule
 \end{longtable}

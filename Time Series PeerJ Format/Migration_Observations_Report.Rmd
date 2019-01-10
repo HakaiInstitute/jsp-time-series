@@ -625,8 +625,6 @@ parasite_summary_table <- full_join(abundance_df, prevalence) %>%
   rename(Year = year, Region = region, Species = species) %>% 
   mutate(Year = as.character(Year))
 
-
-
 time_series_parasite_summary <- parasite_summary_table %>% 
   ungroup() %>% 
   group_by(Species, Region) %>% 
@@ -763,11 +761,11 @@ include_graphics('map.png')
 
 ## Data Analysis
 
-  Time series anomalies reported are in relation to the time series averages (2015-`r current_year`). The mean for each parameter of interest was calculated for all years combined, and the z-score was calculated for each parameter to determine the number of standard deviations away from the mean a given parameter was in each year. Measurements from the Discovery Islands and Johnstone Strait regions of the salmon migration were combined in analyses unless otherwise indicated. All analyses were conducted using R [@R].
+  Time series anomalies reported are in relation to the time series averages (2015-`r current_year`). The mean for each parameter of interest was calculated for all years combined, and the z-score was calculated for each parameter to determine the number of standard deviations away from the mean a given parameter was in each year. Measurements from the Discovery Islands and Johnstone Strait regions of the salmon migration were combined in analyses unless otherwise indicated. Only sites that were sampled in all years were used. All analyses were conducted using R [@R].
 
   The peak migration date for each species was estimated by calculating the median date of capture in the Discovery Islands. This method was used because the period in which surveys and seines were conducted was the same each year and seines were always conducted before sockeye arrived and after sockeye disappeared. Often, however, the entire duration of the pink and chum migration through the Discovery Islands was not captured because their migration period is more protracted compared to sockeye. Cumulative abundance was calculated over a constrained period between May 1st and July 9th of each year. Seines from Johnstone Strait were excluded from the migration timing calculation so that timing indicates the migration through the Discovery Islands. Because very few pink are caught in odd-years, only even-years were included in the calculation of the pink time series average.
 
-  Catch intensity was calculated to provide a measure of inter-annual abundance for sockeye, pink, and chum. Catch intensity was defined as the average number of fish captured when greater than 1 sockeye was caught. In effect, catch intensity summarizes the abundance of each species in a community of co-migrating sockeye, pink, and chum when sockeye are always present.
+  Catch intensity was calculated to provide a measure of inter-annual abundance for sockeye, pink, and chum. Catch intensity was defined as the average number of a species caught when > 1 of that particular species was caught, and when sockeye were also caught. In effect, catch intensity summarizes the abundance of each species in a community of co-migrating sockeye, pink, and chum when sockeye are present.
   
   Species proportions were calculated by dividing the total number of each species caught, by the sum of all species caught that season. Only seines that caught sockeye were used in the calculation of species to represent the salmon community composition that co-migrate with sockeye. To test whether fork lengths from `r current_year` were significantly different than the time series an independent two-group t-test was conducted. Fork length distributions were visualized by calculating length frequency distributions using kernel density estimates from fork length data.
   
@@ -854,7 +852,10 @@ ggsave(here("figs", "migration_timing.png"))
 
 ```{r catchintensity, fig.cap = "The catch intensity (a measure of abundance) of sockeye, pink, and chum salmon in the Discovery Islands and Johnstone Strait. Numbers under each bar indicate the number of seines in which the species was caught, and erorr bars indicate the 95 percent confidence region.", out.width="90%"}
 
-ggplot2::ggplot(catch_intensity, aes(x = factor(year), y = mean_catch, fill = species)) +
+catch_intensity$species <- catch_intensity$species %>% 
+  fct_relevel("Sockeye", "Pink", "Chum")
+
+ggplot(catch_intensity, aes(x = factor(year), y = mean_catch, fill = species)) +
   geom_bar(colour = "black", stat="identity", position=position_dodge()) +
   geom_errorbar(aes(ymin = mean_catch - lower_ci,
                         ymax = mean_catch + upper_ci),
