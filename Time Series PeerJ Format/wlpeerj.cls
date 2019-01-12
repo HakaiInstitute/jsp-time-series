@@ -40,6 +40,7 @@
 \RequirePackage[labelfont={bf,sf},%
                 labelsep=period,%
                 justification=raggedright]{caption}
+                
 
 % \RequirePackage{natbib}
 % \bibliographystyle{apalike}
@@ -195,17 +196,17 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 % {\color{color1}\keywordname\hspace*{1em}} \@keywords%
 % }%
 }%
-\vskip25pt%
+%\vskip25pt% Brett commented this out
 }%
 }%
 %-----------------------------------------------
 \setlength{\columnsep}{0.55cm} % Distance between the two columns of text
 \setlength{\fboxrule}{0.75pt} % Width of the border around the abstract
-
+\setlength{\parskip}{0pt} % Brett added this 
 \definecolor{color1}{RGB}{0,0,0} % Color of section headings
 \definecolor{color2}{RGB}{250,232,207} % Color of the box behind the abstract
 \newcommand{\keywordname}{Keywords:} % Defines the keywords heading name
-
+\raggedbottom % Brett added this
 \renewcommand\Authfont{\fontsize{12}{14}\usefont{OT1}{phv}{b}{n}}
 \renewcommand\Affilfont{\fontsize{10}{12}\usefont{OT1}{phv}{b}{n}}
 
