@@ -223,6 +223,52 @@ saveRDS(sealice_summary_table, here("data", "sealice_summary_table.RDS"))
 
 ```
 
+```{r abundance bootstrapping}
+library(rsample)
+library(dplyr)
+library(tidyr)
+library(broom)
+library(purrr)
+df <- sealice_time_series %>% 
+  filter(louse_species != "all_lice") %>% 
+  select(year, region, species, louse_species, n_lice) %>% 
+  nest(-year, -region, -species, -louse_species) %>% 
+  mutate(booted = map(data, ~ bootstraps(., times = 10))) %>% 
+  unnest(booted)
+
+# Slipper method
+library(slipper)
+df <- sealice_time_series %>% 
+  filter(louse_species != "all_lice") %>% 
+  group_by(year, region, species, louse_species) %>% 
+  slipper(mean(n_lice))
+
+```
+
+```{r}
+# Test chunk for bootstrap CIs (delete later once CIs are figured)
+dat<-expand.grid(Region=1:3, Species=1:4, Sex=c("M","F"))
+dat<-do.call("rbind",lapply(1:10,function(x) dat))
+dat$Bodysize<-rnorm(nrow(dat),10,2)
+
+# Function to sample 4 of the 10 individuals in each of the 24 subsets (n_regions * n_species * n_sexes)
+## and creates a new data fram with 96 cases and computes the mean of body size in each of the subsets.
+## The whole thing is done 100 times and we end up with 100 bootstrapped means for the 24 subsets
+groupmeans<-sapply(1:100, function(z) {
+  dat.rs<-do.call("rbind",
+    lapply(split(dat,list(dat$Region,dat$Species,dat$Sex)),
+      function(x) x[sample(10, 4, replace=TRUE),]))
+  aggregate(dat.rs$Bodysize,
+    list(dat.rs$Region,dat.rs$Species,dat.rs$Sex),
+    mean)$x
+  }
+)
+
+tmp<-aggregate(dat$Bodysize,
+  list(dat$Region,dat$Species,dat$Sex),mean)
+rownames(groupmeans)<-apply(tmp[,1:3],1,paste,collapse="")
+```
+
 ```{r SST}
 # Get CTD data from EIMS database using R API
 
@@ -828,9 +874,15 @@ so_predict_annual_prop_DI_2017 <-
 
 # Getting singular gradient warning for 2017 chum
 # # chum
-# cu_cum_abund_annual_DI_2017 <- daily_mean_cumul_abund_annual %>%
-#   filter(species == "cu_total", year == 2017)
-# 
+cu_cum_abund_annual_DI_2017 <- daily_mean_cumul_abund_annual %>%
+  filter(species == "cu_total", year == 2017)
+
+cu_cum_abund_2017 <- cu_cum_abund_2017 %>% 
+  mutate(species = "Chum")
+
+# For now, I'll fjust use raw points without a line
+write_csv(cu_cum_abund_annual_DI_2017, here("data", "cu_cum_abund_2017.csv"))
+          
 # cu_predict_annual_prop_DI_2017 <-
 #   log_cumul_abund(cu_cum_abund_annual_DI_2017$percent,
 #                   cu_cum_abund_annual_DI_2017$survey_date) %>%

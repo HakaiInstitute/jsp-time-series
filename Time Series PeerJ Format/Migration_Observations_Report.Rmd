@@ -58,6 +58,8 @@ predict_average_prop <- read_csv(here("data", "predict_average_prop.csv"))
 predict_annual_prop <- read_csv(here("data", "predict_annual_prop.csv"))
 peak_dates <- read_csv(here("data", "peak_dates.csv"))
 catch_intensity <- read_csv(here("data", "catch_intensity.csv"))
+# I can't get 2017 chum logistic growth line so use points instead
+cu_cum_abund_2017 <- read_csv(here("data", "cu_cum_abund_2017.csv"))
 # Length Data
 length_histo <- read_csv(here("data", "length_histo.csv"))
 # Standardized z-scores
@@ -229,11 +231,11 @@ time_series_parasite_summary <- sealice_summary_table %>%
   select(Year, Region, Species, "Louse Species", n, "Abundance, 95% CI", "Prevalence, 95% CI", "Intensity, 95% CI")
 
 sealice_table_pretty <- sealice_summary_table %>%
+  filter(louse_species != "all_lice") %>% 
   mutate("Abundance, 95% CI" = paste0(Abundance, " +/- ", abundance_ci),
          "Prevalence, 95% CI" = paste0(Prevalence, " +/- ", prevalence_ci),
          "Intensity, 95% CI" = paste0(Intensity, " +/- ", intensity_ci)) %>% 
-  mutate("Louse Species" = dplyr::recode(louse_species, all_lice = "Both Species",
-                                         motile_caligus = "Motile Caligus",
+  mutate("Louse Species" = dplyr::recode(motile_caligus = "Motile Caligus",
                                          motile_lep = "Motile Lep")) %>% 
   select(Year, Region, Species, "Louse Species", n, "Abundance, 95% CI", "Prevalence, 95% CI", "Intensity, 95% CI")
 ```
@@ -426,6 +428,7 @@ ggplot()+
       geom_line(data = predict_average_prop, aes(x = x, y = y, color = year), size = 2, alpha = 0.8) +
       scale_linetype_manual(values = c("dashed")) +
       geom_line(data = predict_annual_prop, aes(x = x, y = y, color = as.factor(year)), size = 1.25, alpha = 0.8, linetype = "longdash") +
+  geom_point(data = cu_cum_abund_2017, aes(x = survey_date, y = percent, colour = factor(year))) +
       scale_x_continuous(breaks = c(135, 152, 166, 182, 196), 
                          labels = c("May 15", "June 1", "June 15", "July 1", "July 15")) +
       coord_cartesian(xlim = c(128, 182)) + 
@@ -655,7 +658,7 @@ catch_intensity <- catch_intensity %>%
 knitr::kable(catch_intensity, format = 'markdown', 
              col.names = c("Year", "Species", "Catch Intensity"))
 ```
-Table: (\#tab:catch-intensity-table) Catch intensity—our proxy of abundance—for sockeye, pink, and chum in the Discovery Islands and Johnstone Strait combined.
+Table: (\#tab:catch-intensity-table) Catch intensity—our proxy for abundance—for sockeye, pink, and chum in the Discovery Islands and Johnstone Strait combined.
 
 
 ```{r length-table}
@@ -672,6 +675,10 @@ Table: (\#tab:proportion-table) The species proportions of total catch in each y
 
 
 ```{r sealice-table}
+
+sealice_table_pretty <- sealice_table_pretty %>% 
+  filter(Species !)
+  
 knitr::kable(sealice_table_pretty, format = 'markdown', caption = "Mean sea-lice loads (with 95% CI calculated from annual averages) ")
 
 ```
