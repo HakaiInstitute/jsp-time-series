@@ -59,7 +59,7 @@ predict_annual_prop <- read_csv(here("data", "predict_annual_prop.csv"))
 peak_dates <- read_csv(here("data", "peak_dates.csv"))
 catch_intensity <- read_csv(here("data", "catch_intensity.csv"))
 # I can't get 2017 chum logistic growth line so use points instead
-cu_cum_abund_2017 <- read_csv(here("data", "cu_cum_abund_2017.csv"))
+cu_cum_abund_annual_DI_2017 <- read_csv(here("data", "cu_cum_abund_annual_DI_2017.csv"))
 # Length Data
 length_histo <- read_csv(here("data", "length_histo.csv"))
 # Standardized z-scores
@@ -393,6 +393,8 @@ ggplot(heatmap_data, aes(year, metric, colour = Z)) +
   scale_x_continuous(expand = expand_scale(mult = c(.1, .1)), minor_breaks = 0) +
   ggtitle("Time Series Anomalies") +
   theme(panel.grid.major.y= element_line("grey"))
+
+ggsave(here("figs", "heatmap.png"))
 ```
 
 
@@ -428,7 +430,7 @@ ggplot()+
       geom_line(data = predict_average_prop, aes(x = x, y = y, color = year), size = 2, alpha = 0.8) +
       scale_linetype_manual(values = c("dashed")) +
       geom_line(data = predict_annual_prop, aes(x = x, y = y, color = as.factor(year)), size = 1.25, alpha = 0.8, linetype = "longdash") +
-  geom_point(data = cu_cum_abund_2017, aes(x = survey_date, y = percent, colour = factor(year))) +
+  geom_point(data = cu_cum_abund_annual_DI_2017, aes(x = survey_date, y = percent, colour = factor(year))) +
       scale_x_continuous(breaks = c(135, 152, 166, 182, 196), 
                          labels = c("May 15", "June 1", "June 15", "July 1", "July 15")) +
       coord_cartesian(xlim = c(128, 182)) + 
@@ -529,6 +531,7 @@ sealice_summary_table %>%
   theme(legend.text = element_text(face = "italic", size = 10)) +
   ggtitle("Sea Lice Abundance")
 
+ggsave(here("figs", "sealice_abundance"))
 ```
 
 ```{r sealice-prevalence-plot, fig.cap="The prevalence of motile sea lice on juvenile salmon in the Discovery Islands and Johnstone Strait. The numbers under each bar indicate the sample size and the error bars indicate the 95 percent confidence region.", out.width="90%"}
@@ -557,6 +560,8 @@ sealice_summary_table %>%
       labs(fill = "Louse Species") + 
       theme(legend.text = element_text(face = "italic", size = 10)) +
       ggtitle("Sea Lice Prevalence")
+
+ggsave(here("figs", "sealice_prevalence.png"))
 
 ```
 
@@ -588,6 +593,7 @@ sealice_summary_table %>%
   theme(legend.text = element_text(face = "italic", size = 10)) +
   ggtitle("Sea Lice Intensity")
 
+ggsave(here("figs", "sealice_intensity.png"))
 ```
 
 ```{r sst-plot, out.width="90%", fig.cap="Sea-surace temperature (top 30 m) at station QU39 in the northern Strait of Georgia is the solid black line which is a LOESS regression based on temperatures from 2015-2018 representing the time series average. Blue areas represent temperatures from 2018 that are below average, red areas represent above average temperatures. The shaded grey area is 1 SE of the LOESS regression. The black dots are the daily minimum and maximum temperatures observed over the time series."}

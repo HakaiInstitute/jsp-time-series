@@ -431,6 +431,14 @@ qu39_temp_anomaly_data <-
     predicted_mean_temp = predict(temp.lo_qu39, (155 + 149) / 2),
     mean_temp = predict(temp.lo_qu39, (155 + 149) / 2)
   ) %>%
+  add_row(station = "QU39",
+    yday = (162 + 169) / 2,
+    predicted_mean_temp = predict(temp.lo_qu39, (162 + 169) / 2),
+    mean_temp = predict(temp.lo_qu39, (162 + 169) / 2)) %>% 
+  add_row(station = "QU39",
+    yday = (171 + 169) / 2,
+    predicted_mean_temp = predict(temp.lo_qu39, (171 + 169) / 2),
+    mean_temp = predict(temp.lo_qu39, (171 + 169) / 2)) %>% 
   add_row(
     station = "QU39",
     yday = (192 + 177) / 2,
@@ -877,11 +885,10 @@ so_predict_annual_prop_DI_2017 <-
 cu_cum_abund_annual_DI_2017 <- daily_mean_cumul_abund_annual %>%
   filter(species == "cu_total", year == 2017)
 
-cu_cum_abund_2017 <- cu_cum_abund_2017 %>% 
-  mutate(species = "Chum")
+cu_cum_abund_annual_DI_2017$species <- "Chum"
 
 # For now, I'll fjust use raw points without a line
-write_csv(cu_cum_abund_annual_DI_2017, here("data", "cu_cum_abund_2017.csv"))
+write_csv(cu_cum_abund_annual_DI_2017, here("data", "cu_cum_abund_DI_2017.csv"))
           
 # cu_predict_annual_prop_DI_2017 <-
 #   log_cumul_abund(cu_cum_abund_annual_DI_2017$percent,
