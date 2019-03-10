@@ -59,9 +59,10 @@ predict_annual_prop <- read_csv(here("data", "predict_annual_prop.csv"))
 peak_dates <- read_csv(here("data", "peak_dates.csv"))
 catch_intensity <- read_csv(here("data", "catch_intensity.csv"))
 # I can't get 2017 chum logistic growth line so use points instead
-cu_cum_abund_annual_DI_2017 <- read_csv(here("data", "cu_cum_abund_annual_DI_2017.csv"))
+cu_cum_abund_annual_DI_2017 <- read_csv(here("data", "cu_cum_abund_DI_2017.csv"))
 # Length Data
 length_histo <- read_csv(here("data", "length_histo.csv"))
+fish_cond <- read_csv(here("data", "fish_cond_data.csv"))
 # Standardized z-scores
 heatmap_data <- read.csv(here("data", "heatmap_data.csv")) 
 
@@ -78,6 +79,7 @@ pl_colours <- c("pi_total" = "pink", "so_total" = "#00BFC4", "cu_total" = "#7CAE
 
 current_year <- max(year(survey_data$survey_date))
 project_years <- current_year - 2015 + 1
+study_range <- paste(2015, "-", current_year)
 ```
 
 ```{r migration timing stats, include=FALSE}
@@ -430,14 +432,11 @@ ggplot()+
       geom_line(data = predict_average_prop, aes(x = x, y = y, color = year), size = 2, alpha = 0.8) +
       
       geom_line(data = predict_annual_prop, aes(x = x, y = y, color = as.factor(year)), size = 1.25, alpha = 0.8, linetype = "longdash") +
-<<<<<<< HEAD
   geom_point(data = cu_cum_abund_annual_DI_2017, aes(x = survey_date, y = percent, colour = factor(year))) +
-=======
-  geom_point(data = cu_cum_abund_2017, aes(x = survey_date, y = percent, colour = factor(year))) + 
+  geom_point(data = cu_cum_abund_annual_DI_2017, aes(x = survey_date, y = percent, colour = factor(year))) + 
   # geom_smooth(data = cu_cum_abund_2017, aes(x = survey_date, y = percent,
   #                                           colour = factor(year)), span = 1, se = FALSE) +
   scale_linetype_manual(values = c("dashed")) +
->>>>>>> fe1d968e0056764ac50b130232d9a1bf4b13b7d3
       scale_x_continuous(breaks = c(135, 152, 166, 182, 196), 
                          labels = c("May 15", "June 1", "June 15", "July 1", "July 15")) +
       coord_cartesian(xlim = c(128, 190)) + 
@@ -452,6 +451,33 @@ ggplot()+
   ggtitle("Migration Timing")
     
 ggsave(here("figs", "migration_timing.png"))
+```
+
+```{r condition}
+
+time_series_fish_cond <- fish_cond %>% 
+  mutate(year = factor(year(date))) %>% 
+  filter(species == "SO",
+         year != current_year) %>% 
+  mutate(Years = "Time series")
+
+current_fish_cond <- fish_cond %>% 
+  filter(Years == current_year) %>% 
+  mutate(Years == current_year)
+
+ggplot(data = fish_cond, aes(x = fork_length, y = weight, colour= Years)) +
+  geom_point(data = time_series_fish_cond, alpha = .2) +
+  geom_point(data = current_fish_cond, alpha = .5) + 
+  ylab('Weight (g)')+
+  xlab('Length (mm)')+
+  labs(title = "Sockeye Length Weight Relationship",
+       subtitle = paste(current_year, "in red compared to time series")) +
+  coord_cartesian(xlim = c(60, 165), ylim = c(0, 50)) +
+  scale_color_manual(values=c("#B52025", "black")) +
+  theme(legend.position = c(.9, .15), legend.title=element_blank())
+
+ggsave(here("figs", "length_weight.png"))
+
 ```
 
 ```{r catch-intensity-plot, fig.cap = "The catch intensity (our proxy for abundance) of sockeye, pink, and chum salmon in the Discovery Islands and Johnstone Strait. Numbers under each bar indicate the number of seines in which the species was caught, and erorr bars indicate the 95 percent confidence region.", out.width="90%"}
@@ -471,7 +497,9 @@ ggplot(catch_intensity, aes(x = factor(year), y = mean_catch, fill = species)) +
   ylab("Catch Intensity") +
   scale_fill_hakai()+
   labs(fill = "Species") +
-  ggtitle("Species Abundance")
+  ggtitle("Species Abundance Proxy")
+
+ggsave(here("figs", "catch_intesity.png"))
 ```
 
 ```{r proportion-plot, out.width="90%", fig.cap="The annual proportion of fish captured in the Discovery Islands and Johnstone Strait combined."}
@@ -538,7 +566,7 @@ sealice_summary_table %>%
   theme(legend.text = element_text(face = "italic", size = 10)) +
   ggtitle("Sea Lice Abundance")
 
-ggsave(here("figs", "sealice_abundance"))
+ggsave(here("figs", "sealice_abundance.png"))
 ```
 
 ```{r sealice-prevalence-plot, fig.cap="The prevalence of motile sea lice on juvenile salmon in the Discovery Islands and Johnstone Strait. The numbers under each bar indicate the sample size and the error bars indicate the 95 percent confidence region.", out.width="90%"}

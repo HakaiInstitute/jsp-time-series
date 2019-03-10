@@ -985,6 +985,26 @@ saveRDS(peak_dates, here("data", "peak_dates.RDS"))
 
 ```
 
+```{r Condition}
+
+library('hakaiApi')
+library('tidyverse')
+
+# Run this line independently before the rest of the code to get the API authentication
+client <- hakaiApi::Client$new() # Follow stdout prompts to get an API token
+
+# Make a data request for chlorophyll data
+endpoint <- sprintf("%s/%s", client$api_root, "eims/views/output/jsp_fish?limit=-1")
+fish_cond <- client$get(endpoint) %>% 
+  select(date, species, weight, fork_length) %>% 
+  filter(species %in% c('SO', 'PI', 'CU')) %>% 
+  mutate(year = factor(year(date)))
+
+write_csv(fish_cond, here("data", "fish_cond.csv"))
+
+
+```
+
 ```{r Species Proportions}
 # SPECIES PROPORTIONS
 
