@@ -428,12 +428,19 @@ predict_annual_prop$species <- factor(predict_annual_prop$species) %>%
 ggplot()+
       labs(x = 'Date', y = 'Cumulative Catch %') +
       geom_line(data = predict_average_prop, aes(x = x, y = y, color = year), size = 2, alpha = 0.8) +
-      scale_linetype_manual(values = c("dashed")) +
+      
       geom_line(data = predict_annual_prop, aes(x = x, y = y, color = as.factor(year)), size = 1.25, alpha = 0.8, linetype = "longdash") +
+<<<<<<< HEAD
   geom_point(data = cu_cum_abund_annual_DI_2017, aes(x = survey_date, y = percent, colour = factor(year))) +
+=======
+  geom_point(data = cu_cum_abund_2017, aes(x = survey_date, y = percent, colour = factor(year))) + 
+  # geom_smooth(data = cu_cum_abund_2017, aes(x = survey_date, y = percent,
+  #                                           colour = factor(year)), span = 1, se = FALSE) +
+  scale_linetype_manual(values = c("dashed")) +
+>>>>>>> fe1d968e0056764ac50b130232d9a1bf4b13b7d3
       scale_x_continuous(breaks = c(135, 152, 166, 182, 196), 
                          labels = c("May 15", "June 1", "June 15", "July 1", "July 15")) +
-      coord_cartesian(xlim = c(128, 182)) + 
+      coord_cartesian(xlim = c(128, 190)) + 
       scale_shape_manual(values = shapes) +
       scale_colour_manual(values = cols, name="",
                          breaks=c("2015-2018", "2015", "2016", "2017", "2018"),

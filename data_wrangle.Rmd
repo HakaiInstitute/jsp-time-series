@@ -798,7 +798,9 @@ daily_mean_cumul_abund_annual <- tidy_catch %>%
   filter(region == "DI") %>%
   mutate(year = as.factor(year)) %>%
   group_by(year, region, species) %>%
-  mutate(percent = cumsum(n / sum(n) * 100),
+  arrange(year, region, species, yday) %>% 
+  mutate(cumsum = cumsum(n),
+          percent = cumsum(n / sum(n) * 100),
          non_cumul_prop = n / sum(n)) %>%
   ungroup() %>%
   transmute(
@@ -880,11 +882,18 @@ so_predict_annual_prop_DI_2017 <-
   mutate(region = "DI", year = 2017) %>%
   mutate(daily_percent = y - lag(y), species = "SO")
 
-# Getting singular gradient warning for 2017 chum
-# # chum
+
+## chum
 cu_cum_abund_annual_DI_2017 <- daily_mean_cumul_abund_annual %>%
   filter(species == "cu_total", year == 2017)
+          
+cu_predict_annual_prop_DI_2017 <-
+  log_cumul_abund(cu_cum_abund_annual_DI_2017$percent,
+                  cu_cum_abund_annual_DI_2017$survey_date) %>%
+  mutate(region = "DI", year = 2017) %>%
+  mutate(daily_percent = y - lag(y), species = "CU")
 
+<<<<<<< HEAD
 cu_cum_abund_annual_DI_2017$species <- "Chum"
 
 # For now, I'll fjust use raw points without a line
@@ -895,6 +904,15 @@ write_csv(cu_cum_abund_annual_DI_2017, here("data", "cu_cum_abund_DI_2017.csv"))
 #                   cu_cum_abund_annual_DI_2017$survey_date) %>%
 #   mutate(region = "DI", year = 2017) %>%
 #   mutate(daily_percent = y - lag(y), species = "CU")
+=======
+# Getting singular gradient warning for 2017 chum
+cu_cum_abund_2017 <- cu_cum_abund_annual_DI_2017 %>% 
+  ungroup() %>% 
+  mutate(species = "Chum")
+
+# For now, I'll fjust use raw points without a line
+write_csv(cu_cum_abund_2017, here("data", "cu_cum_abund_2017.csv"))
+>>>>>>> fe1d968e0056764ac50b130232d9a1bf4b13b7d3
 
 #2018 modeled cumulative abundance
 # sockeye
@@ -937,6 +955,7 @@ predict_annual_prop <-
     pi_predict_annual_prop_DI_2016,
     cu_predict_annual_prop_DI_2016,
     so_predict_annual_prop_DI_2017,
+    #cu_predict_annual_prop_DI_2017, Won't include this year b/c it doesn't seem like the log_cumul_abund function works for these data.
     so_predict_annual_prop_DI_2018,
     pi_predict_annual_prop_DI_2018,
     cu_predict_annual_prop_DI_2018
