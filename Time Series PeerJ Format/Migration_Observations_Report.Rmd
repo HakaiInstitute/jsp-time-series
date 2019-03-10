@@ -62,7 +62,12 @@ catch_intensity <- read_csv(here("data", "catch_intensity.csv"))
 cu_cum_abund_annual_DI_2017 <- read_csv(here("data", "cu_cum_abund_DI_2017.csv"))
 # Length Data
 length_histo <- read_csv(here("data", "length_histo.csv"))
-fish_cond <- read_csv(here("data", "fish_cond_data.csv"))
+fish_cond <- read_csv(here("data", "fish_cond.csv"))
+fish_cond$species <- factor(fish_cond$species)
+fish_cond$species <- fct_relevel(fish_cond$species, "Sockeye" = "SO", "Pink" = 'PI', 'Chum' = 'CU', 'Coho' = 'CO')
+# Must match the order of the species re ordered above
+levels(fish_cond$species) <- c('Sockeye', 'Pink', 'Chum', 'Coho')
+
 # Standardized z-scores
 heatmap_data <- read.csv(here("data", "heatmap_data.csv")) 
 
@@ -453,28 +458,30 @@ ggplot()+
 ggsave(here("figs", "migration_timing.png"))
 ```
 
-```{r condition}
+```{r condition-plot}
 
 time_series_fish_cond <- fish_cond %>% 
   mutate(year = factor(year(date))) %>% 
-  filter(species == "SO",
+  filter(species %in% c("Sockeye", "Pink", "Chum", "Coho"),
          year != current_year) %>% 
   mutate(Years = "Time series")
 
 current_fish_cond <- fish_cond %>% 
-  filter(Years == current_year) %>% 
-  mutate(Years == current_year)
+  filter(year == current_year) %>% 
+  mutate(Years = factor(current_year))
+
 
 ggplot(data = fish_cond, aes(x = fork_length, y = weight, colour= Years)) +
   geom_point(data = time_series_fish_cond, alpha = .2) +
   geom_point(data = current_fish_cond, alpha = .5) + 
   ylab('Weight (g)')+
   xlab('Length (mm)')+
-  labs(title = "Sockeye Length Weight Relationship",
+  labs(title = "Length Weight Relationships",
        subtitle = paste(current_year, "in red compared to time series")) +
-  coord_cartesian(xlim = c(60, 165), ylim = c(0, 50)) +
+  coord_cartesian(xlim = c(60, 177), ylim = c(0, 80)) +
   scale_color_manual(values=c("#B52025", "black")) +
-  theme(legend.position = c(.9, .15), legend.title=element_blank())
+  theme(legend.position = c(.9, .9), legend.title=element_blank()) +
+  facet_wrap(~species, nrow=2)
 
 ggsave(here("figs", "length_weight.png"))
 
