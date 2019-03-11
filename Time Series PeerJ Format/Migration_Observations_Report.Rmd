@@ -472,12 +472,11 @@ current_fish_cond <- fish_cond %>%
 
 
 ggplot(data = fish_cond, aes(x = fork_length, y = weight, colour= Years)) +
-  geom_point(data = time_series_fish_cond, alpha = .2, size = .7) +
-  geom_point(data = current_fish_cond, alpha = .5, size = 0.75) + 
+  geom_point(data = time_series_fish_cond, alpha = .2, size = 3) +
+  geom_point(data = current_fish_cond, alpha = .5, size = 3) + 
   ylab('Weight (g)')+
   xlab('Length (mm)')+
-  labs(title = "Length Weight Relationships",
-       subtitle = paste(current_year, "in red compared to time series")) +
+  labs(title = "Length Weight Relationships") +
   coord_cartesian(xlim = c(60, 177), ylim = c(0, 80)) +
   scale_color_manual(values=c("#B52025", "black")) +
   theme(legend.position = c(.9, .9), legend.title=element_blank()) +
