@@ -41,9 +41,9 @@ library(car)
 library(ggridges)
 library(forcats)
 
-theme_set(ggsidekick::theme_sleek()) #Thanks Sean Anderson
+theme_set(ggsidekick::theme_sleek(base_size = 18)) #Thanks Sean Anderson
 
-# Survey Data
+     # Survey Data
 survey_seines <- read_csv(here("data", "survey_seines.csv")) %>%
   rename("Sockeye" = "so_total", "Pink" = "pi_total", "Chum" = "cu_total")
 sealice_summary_table <- read_csv(here("data", "sealice_summary_table.csv"))
@@ -409,10 +409,10 @@ ggsave(here("figs", "heatmap.png"))
 cols <-
   c(
     "2015-2018" = "black",
-    "2018" = "#F8766D",
-    "2017" = "#7CAE00",
-    "2016" = "#00BFC4",
-    "2015" = "#C77CFF"
+    "2018" = "#aa1f25",
+    "2017" = "#346257",
+    "2016" = "#a58457",
+    "2015" = '#facd2a'
   )
 shapes <-
   c(
@@ -434,7 +434,7 @@ predict_annual_prop$species <- factor(predict_annual_prop$species) %>%
 
 ggplot()+
       labs(x = 'Date', y = 'Cumulative Catch %') +
-      geom_line(data = predict_average_prop, aes(x = x, y = y, color = year), size = 2, alpha = 0.8) +
+      geom_line(data = predict_average_prop, aes(x = x, y = y, color = year), size = 2, alpha = 0.75) +
       
       geom_line(data = predict_annual_prop, aes(x = x, y = y, color = as.factor(year)), size = 1.25, alpha = 0.8, linetype = "longdash") +
   geom_point(data = cu_cum_abund_annual_DI_2017, aes(x = survey_date, y = percent, colour = factor(year))) +
@@ -472,8 +472,8 @@ current_fish_cond <- fish_cond %>%
 
 
 ggplot(data = fish_cond, aes(x = fork_length, y = weight, colour= Years)) +
-  geom_point(data = time_series_fish_cond, alpha = .2) +
-  geom_point(data = current_fish_cond, alpha = .5) + 
+  geom_point(data = time_series_fish_cond, alpha = .2, size = .7) +
+  geom_point(data = current_fish_cond, alpha = .5, size = 0.75) + 
   ylab('Weight (g)')+
   xlab('Length (mm)')+
   labs(title = "Length Weight Relationships",
@@ -655,11 +655,11 @@ ggplot(data = temperature_anomaly_data, aes(x = yday, y = mean_temp)) +
       geom_ribbon(data = subset(temperature_anomaly_data, 
                                 mean_temp >= predicted_mean_temp),
                   aes(ymin = predicted_mean_temp, ymax = mean_temp),
-                  fill = 'red', size = 1)+
+                  fill = "#d73027", size = 1)+
       geom_ribbon(data = subset(temperature_anomaly_data, 
                                 mean_temp <= predicted_mean_temp), 
                   aes(ymin = mean_temp, ymax = predicted_mean_temp),
-                  fill = 'blue', size = 1)+
+                  fill = "#4575b4", size = 1)+
       geom_smooth(data = average_temps, aes(x = yday, y = mean_temp),
                   size = 1, colour = 'black', se = T, span = .65) +
       geom_point(data = min_max_data,
