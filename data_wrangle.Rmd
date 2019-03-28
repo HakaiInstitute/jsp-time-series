@@ -230,19 +230,30 @@ library(tidyr)
 library(broom)
 library(purrr)
 
-df <- sealice_time_series %>% 
-  filter(louse_species != "all_lice") %>% 
-  select(year, region, species, louse_species, n_lice) %>% 
-  nest(-year, -region, -species, -louse_species) %>% 
-  mutate(booted = map(data, ~ bootstraps(., times = 10))) %>% 
-  unnest(booted)
+# library(tidyverse)
+# 
+# sealice_time_series = read_csv('data/sealice_time_series.csv')
 
-# Slipper method
-library(slipper)
-df2 <- sealice_time_series %>% 
-  filter(louse_species != "all_lice") %>% 
-  group_by(year, region, species, louse_species) %>% 
-  slipper(mean(n_lice))
+# df <- sealice_time_series %>% 
+#   filter(louse_species != "all_lice") %>% 
+#   select(year, region, species, louse_species, n_lice) %>% 
+#   nest(-year, -region, -species, -louse_species) %>% 
+#   mutate(booted = map(data, ~ bootstraps(., times = 10))) %>% 
+#   unnest(booted)
+# 
+# # Slipper method
+# #library(slipper)
+# filepath='C:/Users/Biljana/Nextcloud/BrettJohnson/slipper/slipper-master/slipper-master/R'
+# source(paste(filepath,'/slipper.R',sep=''))
+# source(paste(filepath,'/slipper_ci.R',sep=''))
+# source(paste(filepath,'/slipper_lm.R',sep=''))
+# source(paste(filepath,'/utils.R',sep=''))
+# library(lazyeval)                            
+# 
+# df2 <- sealice_time_series %>% 
+#   filter(louse_species != "all_lice") %>% 
+#   group_by(year, region, species, louse_species) %>% 
+#   slipper(mean(n_lice))
 
 # I think this is it, but I can't figure out how to iterate over all the environments
 library(modelr)
@@ -255,8 +266,19 @@ mean_n_lice <- function(splits) {
 this_is_it <- sealice_time_series %>% 
   select(year, region, species, louse_species, n_lice) %>%  
   filter(louse_species != "all_lice") %>% 
-  split(list(.$region, .$year, .$species, .$louse_species)) %>% 
-  map(~ bootstraps(., times = 10))
+  split(list(.$region, .$year, .$species, .$louse_species)) 
+
+
+boots <- lapply(1:length(this_is_it), function(x){bootstraps(this_is_it[[x]], times=10000)})
+ 
+boot_samples <- lapply(1:length(boots),function(x){  
+  boots[[x]] %>% 
+  mutate(samples = unlist(map(splits,   mean_n_lice)))})
+
+
+extract.boot.CI <- lapply(1:length(boot_samples), function(x){quantile(boot_samples[[x]]$samples,c(0.025, 0.975))} )
+
+extract.boot.CI=do.call(rbind,extract.boot.CI)
 
 
 ```
