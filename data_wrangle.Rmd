@@ -263,7 +263,7 @@ extract.boot.CI <- lapply(1:length(boot_samples), function(x){quantile(boot_samp
 extract.boot.CI=do.call(rbind,extract.boot.CI)
 # Back to Brett's code
 extract.boot.CI <- as_tibble(extract.boot.CI) 
-extract.boot.CI$estimate <- extract.boot.CI$`97.5%` - extract.boot.CI$`2.5%`
+extract.boot.CI$estimate <- (extract.boot.CI$`97.5%` + extract.boot.CI$`2.5%`) / 2
 category <- names(this_is_it)
 extract.boot.CI$category <- category
 

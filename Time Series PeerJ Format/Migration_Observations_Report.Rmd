@@ -47,6 +47,7 @@ theme_set(ggsidekick::theme_sleek(base_size = 14)) #Thanks Sean Anderson, packag
 survey_seines <- read_csv(here("data", "survey_seines.csv")) %>%
   rename("Sockeye" = "so_total", "Pink" = "pi_total", "Chum" = "cu_total")
 sealice_summary_table <- read_csv(here("data", "sealice_summary_table.csv"))
+sealice_time_series <- read_csv(here("data", "sealice_time_series.csv"))
 # Temp data
 ctd_all <- read_csv(here("data", "ctd_all.csv"))
 temperature_anomaly_data <- read_csv(here("data", "temperature_anomaly_data.csv"))
@@ -570,6 +571,11 @@ ggsave(here("figs", "lengths.png"))
 
 ```{r sealice-abundance-plot, fig.cap="The abundance of motile sea lice on juvenile salmon in the Discovery Islands and Johnstone Strait. The numbers under each bar indicate the sample size and the error bars indicate the 95 percent confidence region.", out.width="90%"}
 
+df <- sealice_time_series %>% 
+  group_by(year, region, species, species, louse_species) %>% 
+  summarize(mean_abund = mean(estimate),
+            lower_ci = mean())
+  
 sealice_summary_table %>% 
   select(Year, Region, Species, louse_species, n, Abundance, abundance_ci) %>% 
   filter(louse_species != "all_lice") %>% 
