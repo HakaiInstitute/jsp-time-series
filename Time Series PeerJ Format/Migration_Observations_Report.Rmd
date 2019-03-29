@@ -30,6 +30,8 @@ output:
 ---
 
 ```{r setup, include = FALSE, messages = FALSE}
+library(tictoc)
+tic("render pdf")
 knitr::opts_chunk$set(fig.pos = 'H', echo = FALSE, warning = FALSE, message = FALSE, error = FALSE)
 # All data used for this analysis is from the hakaisalmon R package v0.2.0 at https://hakaiinstitute.github.io/hakaisalmon/
 library(hakaisalmon)
@@ -47,7 +49,7 @@ theme_set(ggsidekick::theme_sleek(base_size = 14)) #Thanks Sean Anderson, packag
 survey_seines <- read_csv(here("data", "survey_seines.csv")) %>%
   rename("Sockeye" = "so_total", "Pink" = "pi_total", "Chum" = "cu_total")
 sealice_summary_table <- read_csv(here("data", "sealice_summary_table.csv"))
-sealice_time_series <- read_csv(here("data", "sealice_time_series.csv"))
+lice_bootstraps <- read_csv(here("data", "lice_bootstraps.csv"))
 # Temp data
 ctd_all <- read_csv(here("data", "ctd_all.csv"))
 temperature_anomaly_data <- read_csv(here("data", "temperature_anomaly_data.csv"))
@@ -571,10 +573,12 @@ ggsave(here("figs", "lengths.png"))
 
 ```{r sealice-abundance-plot, fig.cap="The abundance of motile sea lice on juvenile salmon in the Discovery Islands and Johnstone Strait. The numbers under each bar indicate the sample size and the error bars indicate the 95 percent confidence region.", out.width="90%"}
 
-df <- sealice_time_series %>% 
+df <- lice_bootstraps %>% 
   group_by(year, region, species, species, louse_species) %>% 
   summarize(mean_abund = mean(estimate),
-            lower_ci = mean())
+            lower_ci = mean(estimate),
+            upper_ci = mean(estimate),
+            n = n())
   
 sealice_summary_table %>% 
   select(Year, Region, Species, louse_species, n, Abundance, abundance_ci) %>% 
@@ -750,10 +754,10 @@ knitr::kable(proportions_table, format = 'markdown')
 ```
 Table: (\#tab:proportion-table) The species proportions of total catch in each year for sockeye, pink, chum, herring, coho, and Chinook.
 
-
 ```{r sealice-table}
   
 knitr::kable(sealice_table_pretty, format = 'markdown', caption = "Mean sea-lice loads (with 95% CI calculated from annual averages) ")
+toc()
 
 ```
 Table: (\#tab:sealice-table) Mean sea-louse abundance, prevalence, and intensity (as defined in Margolis et al. 1990) across the time series (2015-`r current_year`) for each fish, region, and year. 95% confidence intervals were calculated from annual averages. The region DI indicates the Discovery Islands and JS Johnstone Strait.
