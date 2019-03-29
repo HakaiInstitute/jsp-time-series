@@ -305,7 +305,7 @@ saveRDS(catch_intensity, here::here("data", "catch_intensity.RDS"))
 ```
 
 ```{r Migration Timing}
-# Cumulative abundance
+# I first take Cumulative abundance
 
 tidy_catch <- survey_seines %>%
   select(
@@ -1301,7 +1301,7 @@ sst_anomaly_table <- tibble(year = c(2015:current_year),
 
 # Put all the z-scores together into a table
 
-#TODO: Add a column for means
+
 mean <- c(f(so_peak_dates$median), so_catch_intensity$mean_catch, round(so_mean_sd$mean, 1), so_api_annual_mean$Abundance_mean,
           f(PI_peak_dates$median), pi_catch_intensity$mean_catch, round(PI_mean_sd$mean, 1), PI_api_annual_mean$Abundance_mean,
           f(CU_peak_dates$median), cu_catch_intensity$mean_catch, round(CU_mean_sd$mean, 1), CU_api_annual_mean$Abundance_mean)

@@ -200,7 +200,6 @@ proportions_table <- proportion %>%
 
 ```{r sea lice stats}
 # The idea here is to create an aggregated parasite index for both motile leps and caligus sealice for both regions separatlely and calculate abundance, prevalence and intensity according to Margolis et al. 1991. 
-#TODO: Bootstrap sealice confidence intervals, because the dist. are not normal
 
 # treat year as character becauce range 2015-2018 is character
 sealice_summary_table$Year <- as.character(sealice_summary_table$Year)
@@ -346,7 +345,7 @@ sst_nice_table <- sst_annual_mean %>%
 
 # Introduction
 
-  The first months after marine entry have been identified as a potentially critical period for salmon stock recruitment [@Beamish2001], which may ultimately be responsible for inter-annual variability and long-term declines in British Columbian salmon stocks [@Peterman2010; @Beamish2012]. The leading causes of the decline have emerged as the impacts of climate change on marine food web dynamics, followed by pathogens and predators. (#TODO: add reference). The Hakai Institute Juvenile Salmon Program has been monitoring juvenile salmon migrations in the Discovery Islands and Johnstone Strait (Figure \@ref(fig:map)) since 2015 in an effort to understand the factors that are influencing early marine survival of sockeye, pink, and chum [@Hunt2018]. This report summarizes migration timing, fish length, parasite loads, species composition, and sea-surface temperature observed from the first `r project_years` years of this research and monitoring program. These estimates will provide context to investigate questions and interpret results related to growth, survival, and the conditions salmon experience during their migration through this critical region. 
+  The first months after marine entry have been identified as a potentially critical period for salmon stock recruitment [@Beamish2001], which may ultimately be responsible for inter-annual variability and long-term declines in British Columbian salmon stocks [@Peterman2010; @Beamish2012]. The leading causes of the decline have emerged as the impacts of climate change on marine food web dynamics, followed by pathogens and predators [@Cohen2012V2]. The Hakai Institute Juvenile Salmon Program has been monitoring juvenile salmon migrations in the Discovery Islands and Johnstone Strait (Figure \@ref(fig:map)) since 2015 in an effort to understand the factors that are influencing early marine survival of sockeye, pink, and chum [@Hunt2018]. This report summarizes migration timing, fish length, parasite loads, species composition, and sea-surface temperature observed from the first `r project_years` years of this research and monitoring program. These estimates will provide context to investigate questions and interpret results related to growth, survival, and the conditions salmon experience during their migration through this critical region. 
 
 ```{r map, fig.cap = "Sampling locations in 2018", fig.align='left', out.width="90%"}
 include_graphics('map.png')
@@ -479,13 +478,14 @@ ggplot()+
   theme(panel.grid.major.y= element_line("#DCDCDC")) +
   theme(panel.grid.major.x= element_line("#DCDCDC")) +
   facet_grid(species ~ .) +
-  ggtitle("Migration Timing")
+  ggtitle("Migration Timing") 
     
 ggsave(here("figs", "migration_timing.png"))
 ```
 
 ```{r condition-plot, fig.cap="Length and weight regressions for juvenile salmon caught in the Discovery Islands and Johnstone Strait in 2018 coloured red, compared to all outher years in black."}
-
+library(cowplot)
+library(ggpubr)
 time_series_fish_cond <- fish_cond %>% 
   mutate(year = factor(year(date))) %>% 
   filter(species %in% c("Sockeye", "Pink", "Chum", "Coho"),
@@ -496,8 +496,10 @@ current_fish_cond <- fish_cond %>%
   filter(year == current_year) %>% 
   mutate(Years = factor(current_year))
 
+
 #TODO: Add histograms to x and y axes
-ggplot(data = fish_cond, aes(x = fork_length, y = weight, colour= Years)) +
+
+plot <- ggplot(data = fish_cond, aes(x = fork_length, y = weight, colour= Years)) +
   geom_point(data = time_series_fish_cond, alpha = .2, size = 3) +
   geom_point(data = current_fish_cond, alpha = .2, size = 3) + 
   ylab('Weight (g)')+
@@ -506,8 +508,9 @@ ggplot(data = fish_cond, aes(x = fork_length, y = weight, colour= Years)) +
   coord_cartesian(xlim = c(60, 177), ylim = c(0, 80)) +
   scale_color_manual(values=c("#B52025", "black")) +
   theme(legend.position = c(.9, .9), legend.title=element_blank()) +
-  facet_wrap(~species, nrow=2)
+  facet_wrap(~species, nrow=2) 
 
+plot
 ggsave(here("figs", "length_weight.png"))
 
 ```
@@ -573,13 +576,41 @@ ggsave(here("figs", "lengths.png"))
 
 ```{r sealice-abundance-plot, fig.cap="The abundance of motile sea lice on juvenile salmon in the Discovery Islands and Johnstone Strait. The numbers under each bar indicate the sample size and the error bars indicate the 95 percent confidence region.", out.width="90%"}
 
+lice_bootstraps$species <- factor(lice_bootstraps$species) %>% 
+  fct_relevel("SO", "PI", "CU") %>% 
+  fct_recode("Sockeye" = "SO", "Pink" = "PI", "Chum" = "CU")
+
 df <- lice_bootstraps %>% 
   group_by(year, region, species, species, louse_species) %>% 
   summarize(mean_abund = mean(estimate),
-            lower_ci = mean(estimate),
-            upper_ci = mean(estimate),
+            lower_ci = mean(`97.5%`),
+            upper_ci = mean(`2.5%`),
             n = n())
+
+
+df %>% 
+  ggplot(aes(x = year, y = mean_abund, fill = louse_species)) +
+      geom_bar(colour = "black", stat = "identity", position = position_dodge()) +
+      geom_errorbar(aes(ymin = mean_abund - ((upper_ci - lower_ci) / 2), 
+                        ymax = mean_abund + ((upper_ci - lower_ci) / 2)), 
+                    width = 0.2,
+                    position = position_dodge(0.9)) +
+      facet_grid(region ~ species,
+                 labeller = labeller(region = spp_labels)) +
+      labs(x = "Year", y = "Abundance") +
+      theme(legend.position="bottom") +
+      # geom_text(aes(label = ifelse(Abundance == 0, round(Abundance, 1), '')),
+      #          position = position_dodge(0.9), vjust = -0.5) +
+      # geom_text(aes(y = 0.0, label = paste0(n)), size = 3.15, vjust = 1.25,
+      #           position = position_dodge(0.9)) +
+      #scale_y_continuous(expand = expand_scale(mult = c(.15, 0))) +
+      scale_fill_hakai() +
+      labs(fill = "Louse Species") + 
+  theme(legend.text = element_text(face = "italic", size = 10)) +
+  coord_cartesian(ylim = c(0, 1.7)) +
+  ggtitle("Sea Lice Abundance")
   
+
 sealice_summary_table %>% 
   select(Year, Region, Species, louse_species, n, Abundance, abundance_ci) %>% 
   filter(louse_species != "all_lice") %>% 
@@ -599,7 +630,8 @@ sealice_summary_table %>%
       #          position = position_dodge(0.9), vjust = -0.5) +
       # geom_text(aes(y = 0.0, label = paste0(n)), size = 3.15, vjust = 1.25,
       #           position = position_dodge(0.9)) +
-      scale_y_continuous(expand = expand_scale(mult = c(.15, 0))) +
+     # scale_y_continuous(expand = expand_scale(mult = c(.15, 0))) +
+      coord_cartesian(ylim = c(0, 1.7)) +
       scale_fill_hakai() +
       labs(fill = "Louse Species") + 
   theme(legend.text = element_text(face = "italic", size = 10)) +
@@ -720,9 +752,10 @@ Table: (\#tab:z-scores-table) Key salmon health, growth, and migration annual es
 
 
 ```{r migration-timing-table}
+migration_timing$Species <- factor(migration_timing$Species) %>% 
+  fct_relevel("SO", "PI", "CU") %>% 
+  fct_recode("Sockeye" = "SO", "Pink" = "PI", "Chum" = "CU")
 
-#TODO:  recode species names
-#TODO: relevel factor levels to be Sockeye, Pink, Chum
 migration_timing <- migration_timing %>% 
   drop_na()
 knitr::kable(migration_timing, format = 'markdown')
@@ -740,8 +773,9 @@ Table: (\#tab:catch-intensity-table) Catch intensityâ€”our proxy for abundanceâ€
 
 
 ```{r length-table}
-#TODO: recode species names
-#TODO: relevel factor levels to be Sockeye, Pink, Chum
+summary_lengths$Species <- factor(summary_lengths$Species) %>% 
+  fct_relevel("SO", "PI", "CU") %>% 
+  fct_recode("Sockeye" = "SO", "Pink" = "PI", "Chum" = "CU")
 summary_lengths <- summary_lengths %>% 
   select(Year = year, Region = region, Species = species, N = n, "Fork Length" = fork_length, CI = CI)
 knitr::kable(summary_lengths, format = 'markdown')
