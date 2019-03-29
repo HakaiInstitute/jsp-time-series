@@ -59,6 +59,7 @@ current_year <- max(year(survey_data$survey_date))
 project_years <- current_year - 2015 + 1
 
 ```
+
 ```{r sealice}
 sealice_lab_motiles <- hakaisalmon::sealice_lab_motiles
 sealice_field <- hakaisalmon::sealice_field
@@ -172,6 +173,9 @@ sealice_time_series <- motile_lice %>%
   ) %>% 
   filter(species %in% c("SO", "PI", "CU"))
 
+write_csv(sealice_time_series, here("data", "sealice_time_series.csv"))
+saveRDS(sealice_time_series, here("data", "sealice_time_series.rds"))
+
 abundance_df <- sealice_time_series %>% 
   group_by(year, region, louse_species, species) %>% 
   summarize(abundance =  mean(n_lice, na.rm = T), 
@@ -223,37 +227,12 @@ saveRDS(sealice_summary_table, here("data", "sealice_summary_table.RDS"))
 
 ```
 
-```{r abundance bootstrapping attempts}
+```{r sealice bootstrapping}
 library(rsample)
 library(dplyr)
 library(tidyr)
 library(broom)
 library(purrr)
-
-# library(tidyverse)
-# 
-# sealice_time_series = read_csv('data/sealice_time_series.csv')
-
-# df <- sealice_time_series %>% 
-#   filter(louse_species != "all_lice") %>% 
-#   select(year, region, species, louse_species, n_lice) %>% 
-#   nest(-year, -region, -species, -louse_species) %>% 
-#   mutate(booted = map(data, ~ bootstraps(., times = 10))) %>% 
-#   unnest(booted)
-# 
-# # Slipper method
-# #library(slipper)
-# filepath='C:/Users/Biljana/Nextcloud/BrettJohnson/slipper/slipper-master/slipper-master/R'
-# source(paste(filepath,'/slipper.R',sep=''))
-# source(paste(filepath,'/slipper_ci.R',sep=''))
-# source(paste(filepath,'/slipper_lm.R',sep=''))
-# source(paste(filepath,'/utils.R',sep=''))
-# library(lazyeval)                            
-# 
-# df2 <- sealice_time_series %>% 
-#   filter(louse_species != "all_lice") %>% 
-#   group_by(year, region, species, louse_species) %>% 
-#   slipper(mean(n_lice))
 
 # I think this is it, but I can't figure out how to iterate over all the environments
 library(modelr)
@@ -264,23 +243,38 @@ mean_n_lice <- function(splits) {
 
 # this_is_it correctly nests the data into its hierarchical form
 this_is_it <- sealice_time_series %>% 
-  select(year, region, species, louse_species, n_lice) %>%  
   filter(louse_species != "all_lice") %>% 
-  split(list(.$region, .$year, .$species, .$louse_species)) 
+  split(list(.$year, .$region, .$site_id, .$survey_date, .$species, .$louse_species))
 
+# remove empty permutations
+row_lt1 <- which(sapply(this_is_it, nrow) < 1)
+this_is_it <- this_is_it[-row_lt1]
 
-boots <- lapply(1:length(this_is_it), function(x){bootstraps(this_is_it[[x]], times=10000)})
+# Written by Biljana
+boots <- lapply(1:length(this_is_it), function(x){bootstraps(this_is_it[[x]], times=1000)})
  
 boot_samples <- lapply(1:length(boots),function(x){  
   boots[[x]] %>% 
-  mutate(samples = unlist(map(splits,   mean_n_lice)))})
+  mutate(samples = unlist(map(splits, mean_n_lice)))})
 
 
 extract.boot.CI <- lapply(1:length(boot_samples), function(x){quantile(boot_samples[[x]]$samples,c(0.025, 0.975))} )
 
 extract.boot.CI=do.call(rbind,extract.boot.CI)
+# Back to Brett's code
+extract.boot.CI <- as_tibble(extract.boot.CI) 
+extract.boot.CI$estimate <- extract.boot.CI$`97.5%` - extract.boot.CI$`2.5%`
+category <- names(this_is_it)
+extract.boot.CI$category <- category
 
+lice_bootstraps <- extract.boot.CI %>% 
+separate(category, into = c("year", "region", "site_id", "year2", "month", "day", "species", "stage", "louse_species")) %>% 
+  select(-year, year = year2)
 
+readr::write_csv(lice_bootstraps, here("data", "lice_bootstraps.csv"))
+saveRDS(lice_bootstraps, here("data", "lice_bootstraps.rds"))
+
+beepr::beep(8)
 ```
 
 ```{r Catch Intensity}
