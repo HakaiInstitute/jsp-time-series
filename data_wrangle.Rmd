@@ -59,6 +59,7 @@ current_year <- max(year(survey_data$survey_date))
 project_years <- current_year - 2015 + 1
 
 ```
+
 ```{r sealice}
 sealice_lab_motiles <- hakaisalmon::sealice_lab_motiles
 sealice_field <- hakaisalmon::sealice_field
@@ -244,7 +245,7 @@ df2 <- sealice_time_series %>%
   group_by(year, region, species, louse_species) %>% 
   slipper(mean(n_lice))
 
-# I think this is it, but I can't figure out how to iterate over all the environments
+# I think this is it, but I can't figure out how to iterate over all the environments.
 library(modelr)
 mean_n_lice <- function(splits) {
   x <- analysis(splits)
