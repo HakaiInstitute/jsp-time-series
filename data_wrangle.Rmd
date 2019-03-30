@@ -57,6 +57,7 @@ write_csv(survey_seines, here::here("data", "survey_seines.csv"))
 
 current_year <- max(year(survey_data$survey_date))
 project_years <- current_year - 2015 + 1
+study_range <- paste(2015, "-", current_year)
 
 ```
 
@@ -1084,8 +1085,9 @@ write_csv(temperature_anomaly_data,
 
 # Sockeye migrations
 so_peak_dates <- peak_dates %>% 
-  filter(species == "SO") 
+  filter(species == "SO", region == "DI", year != study_range) 
 
+# TODO: check for normality or use non parametric value
 so_mean_of_median_date <- mean(so_peak_dates$median)
 so_sd_of_median_date <- sd(so_peak_dates$median)
 
@@ -1097,11 +1099,12 @@ so_migration_dates_z <- so_peak_dates$z_score
 
 # Pink migrations
 PI_peak_dates <- peak_dates %>% 
-  filter(species == "PI") 
+  filter(species == "PI", region == "DI", year != study_range) 
 
-PI_mean_of_median_date <- mean(PI_peak_dates$median)
-PI_sd_of_median_date <- sd(PI_peak_dates$median)
+PI_mean_of_median_date <- mean(PI_peak_dates$median, na.rm = TRUE)
+PI_sd_of_median_date <- sd(PI_peak_dates$median, na.rm = TRUE)
 
+ 
 PI_peak_dates <- PI_peak_dates %>% 
   arrange(year) %>% 
   mutate(z_score = (median - PI_mean_of_median_date) / PI_sd_of_median_date)
@@ -1110,7 +1113,7 @@ PI_migration_dates_z <- PI_peak_dates$z_score
 
 # Chum migrations
 CU_peak_dates <- peak_dates %>% 
-  filter(species == "CU") 
+  filter(species == "CU", region == "DI", year != study_range) 
 
 CU_mean_of_median_date <- mean(CU_peak_dates$median)
 CU_sd_of_median_date <- sd(CU_peak_dates$median)
@@ -1295,7 +1298,6 @@ sst_z <- (sst_annual_mean$mean_temp - sst_mean) / sst_sd
 
 sst_anomaly_table <- tibble(year = c(2015:current_year),
                             Estimate = round(sst_annual_mean$mean_temp, 2),
-                            metric = rep(c("SST"), project_years),
                             SD = round(sst_annual_mean$sd_temp, 2),
                             Z = sst_z)
 
@@ -1319,20 +1321,30 @@ Z <- c(so_migration_dates_z, so_catch_intensity_z, so_length_z, so_api_z,
        CU_migration_dates_z, cu_catch_intensity_z, CU_length_z, CU_api_z) 
 
 n_species <- 3 # sockeye, pink, chum
-heatmap_data <- tibble(year = rep(c(2015:current_year), n_species * project_years),
-                       metric = factor(rep(c("Sockeye Migration Timing", "Sockeye Catch Intensity", "Sockeye Length", "Sockeye Parasite Loads", "Pink Migration Timing", "Pink Catch Intensity", "Pink Length", "Pink Parasite Loads", "Chum Migration Timing", "Chum Catch Intensity", "Chum Length", "Chum Parasite Loads"), 
-                                           each = project_years)), 
-                       Estimate = mean, SD = SD, Z = Z) 
 
+
+#
+heatmap_data <- tibble(year = rep(c(2015:current_year), n_species * project_years),
+                       Estimate = mean, SD = SD, Z = Z)
+                      
 heatmap_data <- rbind(heatmap_data, sst_anomaly_table) %>% 
  mutate(Z = round(Z, 2),
-        SD = round(SD, 2))
+        SD = round(SD, 2)) 
 
-heatmap_data$metric <- heatmap_data$metric %>%
-  fct_relevel("Sockeye Migration Timing", "Pink Migration Timing", "Chum Migration Timing", "Sockeye Catch Intensity", "Pink Catch Intensity", "Chum Catch Intensity", "Sockeye Length", "Pink Length", "Chum Length", "Sockeye Parasite Loads", "Pink Parasite Loads", "Chum Parasite Loads", "SST") %>%
-  fct_rev()
+vec <- rep(rep(c("Migration Timing", "Catch Intensity", "Length", "Parasite Loads"), each = project_years), n_species)
+vec2 <- rep(c("Sea-surface Temperature"), project_years)
+vec <- c(vec, vec2)
+heatmap_data$measure <- vec
+
+spp_vec <- rep(c("Sockeye", "Pink", "Chum"), each = 16)
+vec3 <- rep(c("Northern Strait of Georgia"), project_years)
+spp_vec <- c(spp_vec, vec3)
+
+heatmap_data$spp <- spp_vec
+
 
 write_csv(heatmap_data, here("data", "heatmap_data.csv"))
 saveRDS(heatmap_data, here("data", "heatmap_data.RDS"))
 
+beepr::beep(13)
 ```
