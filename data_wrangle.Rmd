@@ -1202,8 +1202,10 @@ so_api_annual_mean <- lice_bootstraps %>%
   filter(species == "SO") %>% 
   select("Year" = year, "Species" = species, "Abundance" = estimate) %>% 
   group_by(Year) %>% 
-  summarize(Abundance = mean(Abundance),
-            sd = sd(Abundance)) 
+  summarize(sd = sd(Abundance),
+            Abundance = mean(Abundance),
+            ) %>% 
+  mutate_if(is.numeric, round, 2)
 
 so_api_mean <- mean(so_api_annual_mean$Abundance)
 so_api_sd <- sd(so_api_annual_mean$Abundance)
@@ -1217,8 +1219,10 @@ PI_api_annual_mean <- lice_bootstraps %>%
   filter(species == "PI") %>% 
   select("Year" = year, "Species" = species, "Abundance" = estimate) %>% 
   group_by(Year) %>% 
-  summarize(Abundance = mean(Abundance),
-            sd = sd(Abundance)) 
+  summarize(sd = sd(Abundance),
+            Abundance = mean(Abundance)
+            ) %>% 
+  mutate_if(is.numeric, round, 2)
 
 PI_api_mean <- mean(PI_api_annual_mean$Abundance)
 PI_api_sd <- sd(PI_api_annual_mean$Abundance)
@@ -1232,8 +1236,10 @@ CU_api_annual_mean <- lice_bootstraps %>%
   filter(species == "CU") %>% 
   select("Year" = year, "Species" = species, "Abundance" = estimate) %>% 
   group_by(Year) %>% 
-  summarize(Abundance = mean(Abundance),
-            sd = sd(Abundance)) 
+  summarize(sd = sd(Abundance),
+            Abundance = mean(Abundance)
+            ) %>% 
+  mutate_if(is.numeric, round, 2)
 
 CU_api_mean <- mean(CU_api_annual_mean$Abundance)
 CU_api_sd <- sd(CU_api_annual_mean$Abundance)
@@ -1331,7 +1337,7 @@ heatmap_data <- rbind(heatmap_data, sst_anomaly_table) %>%
  mutate(Z = round(Z, 2),
         SD = round(SD, 2)) 
 
-vec <- rep(rep(c("Migration Timing", "Catch Intensity", "Length", "Parasite Loads"), each = project_years), n_species)
+vec <- rep(rep(c("Migration Timing", "Catch Intensity", "Length", "Sea lice Abundance"), each = project_years), n_species)
 vec2 <- rep(c("Sea-surface Temperature"), project_years)
 vec <- c(vec, vec2)
 heatmap_data$measure <- vec
@@ -1346,5 +1352,5 @@ heatmap_data$spp <- spp_vec
 write_csv(heatmap_data, here("data", "heatmap_data.csv"))
 saveRDS(heatmap_data, here("data", "heatmap_data.RDS"))
 
-beepr::beep(13)
+beepr::beep(1)
 ```

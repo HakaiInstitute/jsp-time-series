@@ -758,8 +758,8 @@ ggsave(here("figs", "sst.png"))
 
 ```{r z-scores-table}
 heatmap_data <- heatmap_data %>% 
-  select(year, measure, Estimate, SD, Z)
-knitr::kable(heatmap_data, col.names = c("Year", "Parameter", "Estimate", "SD", "Z score"), format = 'markdown')
+  select(spp, year, measure, Estimate, SD, Z)
+knitr::kable(heatmap_data, col.names = c("Species", "Year","Parameter", "Estimate", "SD", "Z score"), format = 'markdown')
 ```
 Table: (\#tab:z-scores-table) Key salmon health, growth, and migration annual estimates. Migration timing estimates are the median capture date in the Discovery Islands, catch intensity estimates are the mean catch when greater than one sockeye are caught in the Discovery Islands and Johnstone Strait combined, length estimates are the mean fork length (mm) in both regions combined, parasite loads are mean abundance for motile lice from both regions combined, and SST is the mean sea-surface temperature in degrees celcius at station QU39 in the northern Strait of Georgia. Standard deviation is denoted by SD and is the within-year standard deviation (note no SD for median capture dates). Z score is the number of standard deviations the annual estimate is away from the time series mean.
 
