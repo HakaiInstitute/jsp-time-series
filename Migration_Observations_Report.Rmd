@@ -362,9 +362,9 @@ include_graphics('map.png')
 
 Add clarifying sentence here about why abundance and catch intensity is based on seines that contained sockeye.
 
-  The peak migration date for each species was estimated by calculating the median date of capture in the Discovery Islands. This method was used because the period in which surveys and seines were conducted was the same each year and seines were always conducted before sockeye arrived and after sockeye disappeared. Often, however, the entire duration of the pink and chum migration through the Discovery Islands was not captured because their migration period is more protracted compared to sockeye. Cumulative abundance was calculated over a constrained period between May 1 and July 9 of each year to standardize the period over which cumulative abundance was calculated. Because the Fraser River is currently an even-year-dominant system for pink salmon, very few out-migrating pink are caught in odd years; consequently, only even years were included in the calculation of the pink time series average.
+  The peak migration date for each species was estimated by calculating the median date of capture in the Discovery Islands. This method was used because the period in which surveys and seines were conducted was the same each year and seines were always conducted before sockeye arrived and after sockeye disappeared. Often, however, the entire duration of the pink and chum migration through the Discovery Islands was not captured because their migration period is more protracted compared to sockeye. Cumulative abundance was calculated over a constrained period between May 1 and July 9 of each year to standardize the period over which cumulative abundance was calculated. Because the Fraser River is an even-year-dominant system for pink salmon, very few out-migrating pink are caught in odd years; consequently, only even years were included in the calculation of the pink migration time series averages.
 
-  In 2015 and 2016 we focussed on capturing sockeye and we only enumerated and sampled other species such as pink and chum when sockeye were caught. As a result, catch statistics such as catch intensity and proportion reflect the fact that we only unumerated and sampled salmon when sockeye were caught. In 2017 and 2018 all seines that captured any species of salmon were enumerated and sampled. These differences in methodology are reflected in the way catch intensity and catch proportions are calculated in so far as catch intensity and catch proportion calculations are restricted to when sockeye were present.
+  In 2015 and 2016 we focussed on capturing sockeye, and only enumerated and sampled other species such as pink and chum when sockeye were caught. As a result, catch statistics such as catch intensity and proportion reflect the fact that we only unumerated and sampled salmon when sockeye were caught. In 2017 and 2018 all seines that captured any species of salmon were enumerated and sampled. These differences in methodology are reflected in the way catch intensity and catch proportions are calculated in so far as catch intensity and catch proportion calculations are restricted to when sockeye were present.
   
   Catch intensity was calculated to provide a measure of inter-annual abundance for sockeye, pink, and chum. Catch intensity was defined as the average number of a species caught when > 1 of that particular species was caught, and when sockeye were also caught. In effect, catch intensity summarizes the abundance of each species in a community of co-migrating sockeye, pink, and chum when sockeye are present.
   
@@ -440,11 +440,10 @@ ggsave(here("figs", "heatmap.png"), width = 11, height = 10)
 ```{r migration-timing-plot, fig.cap = "Cumulative annual abundance of sockeye, pink, and chum, in the Discovery Islands and Johnstone Strait compared to the time series average.", out.width="90%"}
 cols <-
   c(
-    "2015-2018" = "black",
     "2018" = "#aa1f25",
-    "2017" = "#346257",
-    "2016" = "#a58457",
-    "2015" = '#facd2a'
+    "2017" = "#a58457",
+    "2016" = "#346257",
+    "2015" = "#6699c5"
   )
 shapes <-
   c(
@@ -463,21 +462,30 @@ predict_average_prop$species <- factor(predict_average_prop$species) %>%
 
 predict_annual_prop$species <- factor(predict_annual_prop$species) %>% 
   fct_relevel(c("Sockeye", "Pink", "Chum"))
+predict_annual_prop$year <- factor(predict_annual_prop$year)
+
+# Remove 2017 chum logistic model, in favour of loess model.
+predict_annual_prop <- predict_annual_prop %>% 
+  filter(year != 2017 | species != "Chum")
 
 ggplot()+
       labs(x = 'Date', y = 'Cumulative Catch %') +
-      geom_line(data = predict_average_prop, aes(x = x, y = y, color = year), size = 2, alpha = 0.75) +
+  # Un comment below if you want to see the time series average    
+  #geom_line(data = predict_average_prop, aes(x = x, y = y, color = year), size = 2, alpha = 0.75) +
       
-      geom_line(data = predict_annual_prop, aes(x = x, y = y, color = as.factor(year)), size = 1.25, alpha = 0.8, linetype = "longdash") +
-  geom_point(data = cu_cum_abund_annual_DI_2017, aes(x = survey_date, y = percent, colour = factor(year))) +
-  geom_point(data = cu_cum_abund_annual_DI_2017, aes(x = survey_date, y = percent, colour = factor(year))) + 
-  # geom_smooth(data = cu_cum_abund_2017, aes(x = survey_date, y = percent,
-  #                                           colour = factor(year)), span = 1, se = FALSE) +
-  scale_linetype_manual(values = c("dashed")) +
+      geom_line(data = predict_annual_prop, aes(x = x, y = y, color = year 
+                                               ), linetype= 5, size = 1.25, alpha = 0.8) +
+
+  geom_smooth(data = cu_cum_abund_annual_DI_2017, aes(x = survey_date,
+                                                      y = percent,
+                                                      colour = factor(year)),
+              linetype = 5,
+                                                      alpha = 0.8, size = 1.25,
+                                                      se = FALSE, span = 1) +
       scale_x_continuous(breaks = c(135, 152, 166, 182, 196), 
                          labels = c("May 15", "June 1", "June 15", "July 1", "July 15")) +
       coord_cartesian(xlim = c(128, 190)) + 
-      scale_shape_manual(values = shapes) +
+      #scale_shape_manual(values = shapes) +
       scale_colour_manual(values = cols, name="",
                          breaks=c("2015-2018", "2015", "2016", "2017", "2018"),
                          labels=c("Average", "2015", "2016", "2017", "2018")) +
