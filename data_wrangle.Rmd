@@ -62,6 +62,7 @@ study_range <- paste(2015, "-", current_year)
 ```
 
 ```{r sealice}
+
 sealice_lab_motiles <- hakaisalmon::sealice_lab_motiles
 sealice_field <- hakaisalmon::sealice_field
 
@@ -1195,48 +1196,49 @@ CU_length_z <- (CU_mean_sd$mean - CU_avg_length[2]) / CU_sd_length[2]
 # Sealice z-scores
 
 # Sockeye sealice
-so_api_annual_mean <- sealice_summary_table %>% 
+so_api_annual_mean <- lice_bootstraps %>% 
   ungroup() %>% 
-  filter(louse_species == "all_lice") %>% 
-  filter(Species == "SO") %>% 
-  select(Year, Species, Prevalence, Abundance, Intensity) %>% 
+  filter(louse_species == "caligus") %>% 
+  filter(species == "SO") %>% 
+  select("Year" = year, "Species" = species, "Abundance" = estimate) %>% 
   group_by(Year) %>% 
-  summarize_all(c("mean", "sd")) %>% 
-  mutate(Species = "SO")
+  summarize(Abundance = mean(Abundance),
+            sd = sd(Abundance)) 
 
-so_api_mean <- mean(so_api_annual_mean$Prevalence_mean)
-so_api_sd <- sd(so_api_annual_mean$Prevalence_mean)
+so_api_mean <- mean(so_api_annual_mean$Abundance)
+so_api_sd <- sd(so_api_annual_mean$Abundance)
 
-so_api_z <- (so_api_annual_mean$Prevalence_mean - so_api_mean) / so_api_sd
+so_api_z <- (so_api_annual_mean$Abundance - so_api_mean) / so_api_sd
 
 # Pink sealice
-PI_api_annual_mean <- sealice_summary_table %>% 
+PI_api_annual_mean <- lice_bootstraps %>% 
   ungroup() %>% 
-  filter(louse_species == "all_lice") %>% 
-  filter(Species == "PI") %>% 
-  select(Year, Species, Prevalence, Abundance, Intensity) %>% 
+  filter(louse_species == "caligus") %>% 
+  filter(species == "PI") %>% 
+  select("Year" = year, "Species" = species, "Abundance" = estimate) %>% 
   group_by(Year) %>% 
-  summarize_all(c("mean", "sd"), na.rm = T) 
+  summarize(Abundance = mean(Abundance),
+            sd = sd(Abundance)) 
 
-PI_api_mean <- mean(PI_api_annual_mean$Prevalence_mean)
-PI_api_sd <- sd(PI_api_annual_mean$Prevalence_mean)
+PI_api_mean <- mean(PI_api_annual_mean$Abundance)
+PI_api_sd <- sd(PI_api_annual_mean$Abundance)
 
-PI_api_z <- (PI_api_annual_mean$Prevalence_mean - PI_api_mean) / PI_api_sd
+PI_api_z <- (PI_api_annual_mean$Abundance - PI_api_mean) / PI_api_sd
 
 # Chum sealice
-CU_api_annual_mean <- sealice_summary_table %>% 
+CU_api_annual_mean <- lice_bootstraps %>% 
   ungroup() %>% 
-  filter(louse_species == "all_lice") %>% 
-  filter(Species == "CU") %>% 
-  select(Year, Species, Prevalence, Abundance, Intensity) %>% 
+  filter(louse_species == "caligus") %>% 
+  filter(species == "CU") %>% 
+  select("Year" = year, "Species" = species, "Abundance" = estimate) %>% 
   group_by(Year) %>% 
-  summarize_all(c("mean", "sd"), na.rm = T) 
+  summarize(Abundance = mean(Abundance),
+            sd = sd(Abundance)) 
 
-CU_api_mean <- mean(CU_api_annual_mean$Abundance_mean)
-CU_api_sd <- sd(CU_api_annual_mean$Abundance_mean)
+CU_api_mean <- mean(CU_api_annual_mean$Abundance)
+CU_api_sd <- sd(CU_api_annual_mean$Abundance)
 
-CU_api_z <- (CU_api_annual_mean$Abundance_mean - CU_api_mean) / CU_api_sd
-
+CU_api_z <- (CU_api_annual_mean$Abundance - CU_api_mean) / CU_api_sd
 # Calculate catch intensity z-scores
 
 # Sockeye catch intensity
@@ -1302,13 +1304,13 @@ sst_anomaly_table <- tibble(year = c(2015:current_year),
 # Put all the z-scores together into a table
 
 
-mean <- c(f(so_peak_dates$median), so_catch_intensity$mean_catch, round(so_mean_sd$mean, 1), so_api_annual_mean$Abundance_mean,
-          f(PI_peak_dates$median), pi_catch_intensity$mean_catch, round(PI_mean_sd$mean, 1), PI_api_annual_mean$Abundance_mean,
-          f(CU_peak_dates$median), cu_catch_intensity$mean_catch, round(CU_mean_sd$mean, 1), CU_api_annual_mean$Abundance_mean)
+mean <- c(f(so_peak_dates$median), so_catch_intensity$mean_catch, round(so_mean_sd$mean, 1), so_api_annual_mean$Abundance,
+          f(PI_peak_dates$median), pi_catch_intensity$mean_catch, round(PI_mean_sd$mean, 1), PI_api_annual_mean$Abundance,
+          f(CU_peak_dates$median), cu_catch_intensity$mean_catch, round(CU_mean_sd$mean, 1), CU_api_annual_mean$Abundance)
 
-SD <- c(rep(NA, project_years), so_catch_intensity$sd, so_mean_sd$sd, so_api_annual_mean$Abundance_sd,
-        rep(NA, project_years), pi_catch_intensity$sd, PI_mean_sd$sd, PI_api_annual_mean$Abundance_sd,
-        rep(NA, project_years), cu_catch_intensity$sd, CU_mean_sd$sd, CU_api_annual_mean$Abundance_sd)
+SD <- c(rep(NA, project_years), so_catch_intensity$sd, so_mean_sd$sd, so_api_annual_mean$sd,
+        rep(NA, project_years), pi_catch_intensity$sd, PI_mean_sd$sd, PI_api_annual_mean$sd,
+        rep(NA, project_years), cu_catch_intensity$sd, CU_mean_sd$sd, CU_api_annual_mean$sd)
 
 ts_mean <- rep(c(f(so_mean_of_median_date), so_mean_catch_intensity, round(so_avg_length[2], 1), so_api_mean,
                  f(PI_mean_of_median_date), pi_mean_catch_intensity, round(PI_avg_length[2], 1), PI_api_mean,

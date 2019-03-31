@@ -244,17 +244,14 @@ time_series_parasite_summary <- sealice_summary_table %>%
 
 sealice_table_pretty <- sealice_summary_table %>%
   filter(louse_species != "all_lice") %>% 
-  mutate("Abundance, 95% CI" = paste0(Abundance, " +/- ", abundance_ci),
-         "Prevalence, 95% CI" = paste0(Prevalence, " +/- ", prevalence_ci),
-         "Intensity, 95% CI" = paste0(Intensity, " +/- ", intensity_ci))
+  mutate("Abundance, 95% CI" = paste0(Abundance, " +/- ", abundance_ci))
 
 
 sealice_table_pretty$louse_species <- dplyr::recode(sealice_table_pretty$louse_species,
                                                     motile_caligus = "Motile Caligus",
                                                     motile_lep = "Motile Lep")
 sealice_table_pretty <- sealice_table_pretty %>% 
-  select(Year, Region, Species, "Louse Species" = louse_species, n, "Abundance, 95% CI", 
-         "Prevalence, 95% CI", "Intensity, 95% CI")
+  select(Year, Region, Species, "Louse Species" = louse_species, n, "Abundance, 95% CI")
 ```
 
 ```{r, length stats}
@@ -464,6 +461,8 @@ predict_annual_prop$species <- factor(predict_annual_prop$species) %>%
   fct_relevel(c("Sockeye", "Pink", "Chum"))
 predict_annual_prop$year <- factor(predict_annual_prop$year)
 
+cu_cum_abund_annual_DI_2017$species <- factor(cu_cum_abund_annual_DI_2017$species)
+
 # Remove 2017 chum logistic model, in favour of loess model.
 predict_annual_prop <- predict_annual_prop %>% 
   filter(year != 2017 | species != "Chum")
@@ -472,16 +471,15 @@ ggplot()+
       labs(x = 'Date', y = 'Cumulative Catch %') +
   # Un comment below if you want to see the time series average    
   #geom_line(data = predict_average_prop, aes(x = x, y = y, color = year), size = 2, alpha = 0.75) +
-      
       geom_line(data = predict_annual_prop, aes(x = x, y = y, color = year 
                                                ), linetype= 5, size = 1.25, alpha = 0.8) +
-
-  geom_smooth(data = cu_cum_abund_annual_DI_2017, aes(x = survey_date,
+   geom_smooth(data = cu_cum_abund_annual_DI_2017, aes(x = survey_date,
                                                       y = percent,
                                                       colour = factor(year)),
               linetype = 5,
                                                       alpha = 0.8, size = 1.25,
                                                       se = FALSE, span = 1) +
+
       scale_x_continuous(breaks = c(135, 152, 166, 182, 196), 
                          labels = c("May 15", "June 1", "June 15", "July 1", "July 15")) +
       coord_cartesian(xlim = c(128, 190)) + 
@@ -598,8 +596,8 @@ lice_bootstraps$species <- factor(lice_bootstraps$species) %>%
 df <- lice_bootstraps %>% 
   group_by(year, region, species, species, louse_species) %>% 
   summarize(mean_abund = mean(estimate),
-            lower_ci = mean(`97.5%`),
-            upper_ci = mean(`2.5%`),
+            upper_ci = mean(`97.5%`),
+            lower_ci = mean(`2.5%`),
             n = n())
 
 
@@ -655,7 +653,7 @@ sealice_summary_table %>%
 ggsave(here("figs", "sealice_abundance.png"))
 ```
 
-```{r sealice-prevalence-plot, fig.cap="The prevalence of motile sea lice on juvenile salmon in the Discovery Islands and Johnstone Strait. The numbers under each bar indicate the sample size and the error bars indicate the 95 percent confidence region.", out.width="90%"}
+```{r sealice-prevalence-plot, eval = FALSE, fig.cap="The prevalence of motile sea lice on juvenile salmon in the Discovery Islands and Johnstone Strait. The numbers under each bar indicate the sample size and the error bars indicate the 95 percent confidence region.", out.width="90%"}
  
 sealice_summary_table %>% 
   select(Year, Region, Species, louse_species, n, Prevalence, prevalence_ci) %>% 
@@ -686,7 +684,7 @@ ggsave(here("figs", "sealice_prevalence.png"))
 
 ```
 
-```{r sealice-intensity-plot, fig.cap="The intensity of motile sea lice (average number of lice when > 1 louse is present) on juvenile salmon in the Discovery Islands and Johnstone Strait. The numbers under each bar indicate the sample size and the error bars indicate the 95 percent confidence region.", out.width="90%"}
+```{r sealice-intensity-plot, eval = FALSE, fig.cap="The intensity of motile sea lice (average number of lice when > 1 louse is present) on juvenile salmon in the Discovery Islands and Johnstone Strait. The numbers under each bar indicate the sample size and the error bars indicate the 95 percent confidence region.", out.width="90%"}
  
 sealice_summary_table %>% 
   select(Year, Region, Species, louse_species, n, Intensity, intensity_ci) %>% 
@@ -804,8 +802,20 @@ knitr::kable(proportions_table, format = 'markdown')
 Table: (\#tab:proportion-table) The species proportions of total catch in each year for sockeye, pink, chum, herring, coho, and Chinook.
 
 ```{r sealice-table}
-  
-knitr::kable(sealice_table_pretty, format = 'markdown', caption = "Mean sea-lice loads (with 95% CI calculated from annual averages) ")
+
+df <- df %>% 
+  ungroup() %>% 
+  mutate(
+         year = factor(year),
+         lower_ci = round(lower_ci, 2),
+         upper_ci = round(upper_ci, 2),
+         "95% CI" = paste(lower_ci, "-", upper_ci)) %>% 
+  select("Year" = "year", "Region" = "region", "Species" = "species",
+         "Louse Species" = "louse_species", "Mean Abundnance" = "mean_abund",
+         "95% CI") %>% 
+  mutate_if(is.numeric, round, 2)
+
+kable(df, format = 'markdown', caption = "Mean sea-lice abundance (with 95% CI) from annual averages) ")
 toc()
 
 ```
