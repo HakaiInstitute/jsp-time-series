@@ -45,7 +45,7 @@ library(car)
 library(ggridges)
 library(forcats)
 
-theme_set(ggsidekick::theme_sleek()) #Thanks Sean Anderson, package hosted on GitHub
+theme_set(ggsidekick::theme_sleek(base_size = 14)) #Thanks Sean Anderson, package hosted on GitHub
 
      # Survey Data
 survey_seines <- read_csv(here("data", "survey_seines.csv")) %>%
@@ -379,23 +379,29 @@ Migration timing in the Discovery Islands in 2018 did not differ from the time s
 
 Sockeye catch intensity in 2018 was low relative to sockeye in previous years and relative to pink and chum in 2018 (Figure \@ref(fig:catch-intensity-plot)). That sockeye catch intensity was low in 2018 is not surprising because 2016 brood year Shuswap or Chilko Lake sockeye, two stocks which are among the most productive, are not as abundant in this cohort as they are in others. Pink catch intensity in 2018 was the highest of the four years measured. Pink out-migrants are more abundant on even years, the result of the odd-year dominant life-cycle of Fraser River pinks [@Heard1991], but 2018 catches indicate either good production or good survival in the early marine environment for pink salmon relative to 2016—the only other odd-year dominant brood year recorded by the Juvenile Salmon Program.
 
-Pink salmon dominated the catch in the Discovery Islands and Johnstone in 2018 making up `r pi_prop` % of the catch (Table \@ref(tab:proportion-table)) while chum made up `r cu_prop` % and sockeye `r so_prop` % (Figure \@ref(fig:proportion-plot)). 2018 was the first time in the time series that pink dominated the catch proportion.
+Catch proportion was dominated by pink salmon in the Discovery Islands and Johnstone in 2018 making up `r pi_prop` % of the catch (Table \@ref(tab:proportion-table)) while chum made up `r cu_prop` % and sockeye `r so_prop` % (Figure \@ref(fig:proportion-plot)). 2018 was the first time in the time series that pink dominated the catch proportion.
 
 Fish lengths varied between regions, and among species and years (Figure \@ref(fig:length-plot)) though in `r current_year` sockeye were `r ifelse(len_tt[1,2] > 0, "longer", "shorter")`, pink were `r ifelse(len_tt[2,2] > 0, "longer", "shorter")`, and chum were `r ifelse(len_tt[3,2] > 0, "longer", "shorter")` than their respective time series averages in the Discovery Islands and Johnstone Strait combined. Sockeye length was `r round(len_tt[1,3],1)` mm (Table \@ref(tab:length-table)), which is `r abs(round(len_tt[1,2],1))` mm `r ifelse(len_tt[1,2] > 0, "longer", "shorter")` than the time series average (_p_ < 0.0001, 95% CI `r abs(round(len_tt[1,8],1))` -`r abs(round(len_tt[1,9],1))`). Average pink lengths were `r round(len_tt[2,3],1)` mm, which is `r abs(round(len_tt[2,2],1))` mm `r ifelse(len_tt[2,2] > 0, "longer", "shorter")` than the time series average (_p_ < 0.0001, 95% CI `r abs(round(len_tt[2,8],1))`-`r abs(round(len_tt[2,9],1))`). Chum  were on average `r round(len_tt[3,3],1)` mm, which is `r abs(round(len_tt[3,2],1))` mm  `r ifelse(len_tt[3,2] > 0, "longer", "shorter")` than the time series average (_p_ < 0.0001, 95% CI `r abs(round(len_tt[3,8],1))`-`r round(len_tt[3,9],1)`). Interestingly, sockeye length was, again, the opposite anomaly compared to pink and chum which tend to vary together (Figure @ref(fig:heatmap). The length frequencies observed here represent the range of fish sizes caught in the nearshore area at the specified times. There is currently no quantitative data available with which to weight these estimates relative to the proportion of fish that migrate in nearshore habitats from which to produce population estimates.
 
-The abundance of motile sea lice in 2018 was the among the lowest recorded in the Discovery Islands time-series while Johnstone Strait parasite loads were average. (Figure \@ref(fig:sealice-abundance-plot)). Notably, no _Lepeophtheirus salmonis_ were detected on sockeye in Johnstone Strait, despite being present in the Discovery Islands. The time series averages indicate pink salmon have higher sea lice abundance, prevalence, and intensity compared to chum, and sockeye (Table \@ref(tab:sealice-table)) in contrast to @Patanasatienkul2013 where they found that the prevalence and intensity of sea lice was higher on chum than pink on early marine entrants in the Broughton Archipelago.
+Motile sea lice abundance in 2018 was the among the lowest recorded in the Discovery Islands time-series while Johnstone Strait parasite loads were average. (Figure \@ref(fig:sealice-abundance-plot)). Notably, no _Lepeophtheirus salmonis_ were detected on sockeye in Johnstone Strait, despite being present in the Discovery Islands. The time series averages indicate pink salmon have higher sea lice abundance, prevalence, and intensity compared to chum, and sockeye (Table \@ref(tab:sealice-table)) in contrast to @Patanasatienkul2013 where they found that the prevalence and intensity of sea lice was higher on chum than pink on early marine entrants in the Broughton Archipelago.
 
 Sea-surface temperature in May and June during the juvenile salmon out-migration at QU39 in the northern Strait of Georgia was `r round(sst_stats_table$estimate, 2)` degrees C warmer than average (Table \@ref(tab:sst-table)) (Figure \@ref(fig:sst-plot)). In the context of the last four last years, 2018 was the warmest surface waters observed in the northern Strait of Georgia, despite 2015 SST along the BC coast breaking records for high temperatures [@Chandler2017]. 
 
 # Discussion
 
-Sockeye migration timing through the Discovery Islands and Johnstone Strait is highly left-skewed [@BrettJohnson2018]. The number of days between the 25th and 50th percentile of catch abundance was two days on average, indicating that there is a punctuated event that triggers their northerly migration (Table \@ref(tab:migration-timing-table)). In 2014, a DFO purse seiner measured that 80% of sockeye passed through the Discovery Islands between June 12 and June 19th [@Neville2016]. We observed 80 % of sockeye migrate through the Discovery Islands by June 1 in 2015 and 2018 and by June 5 in 2016, which is roughly two and a half weeks earlier than observed in 2014. Sockeye from 2014 and 2017 are from the same cyclic dominance cohort, and the year 2017 exhibited the latest migration timing of all four run cycles observed, suggesting that this run cycle tends to migrate later than the others, or some other factor that both 2014 and 2017 had in common affected their migration timing. Sockeye leave the Strait of Georgia 12-20 days before pink and chum, which is driven mostly by water temperatures [@LeBrasseur1964], in addition to better foraging conditions on the continental shelf where upwelling nutrients contribute to higher productivity (Ref). However, sea-surface temperatures in the northern Strait of Georgia in 2017 were the coolest between 2015--2017, confounding the interpretation of the late 2014/2017 run cycle if we assume that sea-surface temperature is what predominantly drives juvenile salmon to migrate north of the Strait of Georgia. 
+Sockeye migration timing through the Discovery Islands and Johnstone Strait is highly left-skewed [@BrettJohnson2018]. The number of days between the 25th and 50th percentile of sockeye catch abundance is two days on average, indicating that there is a punctuated event that triggers their northerly migration (Table \@ref(tab:migration-timing-table)). Further effort should be directed at identifying the conditions which contributed most to sockeye migration timing, and what larger processes led to those conditions. 
+
+In 2014, a DFO purse seiner measured that 80% of sockeye passed through the Discovery Islands between June 12 and June 19th, a period that was then considered 'normal' given previous estimates [@Neville2016]. We observed 80 % of sockeye migrate through the Discovery Islands by June 1 in 2015 and 2018 and by June 5 in 2016, which is roughly two and a half weeks earlier than observed in 2014. Sockeye from 2014 and 2017 are from the same cyclic dominance cohort, and the year 2017 exhibited the latest migration timing of all four run cycles observed, suggesting that this run cycle tends to migrate later than the others, or some other factor that both 2014 and 2017 had in common affected their migration timing—perhaps cooler ocean temperatures observed in 2014 and 2017. This confounds the interpretation that the 2014/2017 run cycle cohort migrates late if we assume that sea-surface temperature is what predominantly drives juvenile sockeye salmon to migrate north of the Strait of Georgia.  Sockeye leave the Strait of Georgia 12-20 days before pink and chum, which is likely driven mostly by water temperatures [@LeBrasseur1964]. It is reasonable to expect sockeye to exit before pink and chum due to preferences in temperature and alternative prey fields. 
+
+There are better foraging conditions found in Queen Charlotte Sound on the continental shelf where upwelling nutrients contribute to higher productivity, where juvenile salmon know to go (Ref??). Sea-surface temperatures in the northern Strait of Georgia in 2017 were the coolest year of those between 2015--2018, which you would expect to be favourable for juvenile salmon, 
 
 In 2017 Chum migrations were also later than average, and as a result, we did not completely capture the tail end of the migration. In 1983, two trawl surveys were conducted in Discovery Passage and the surrounding channels and found that pink and chum abundance peaked in late June [@Levings1983]. We observed peak pink and chum migration timing to be June 14th, up to a week earlier than observed in 1983. However, the direct comparison of these estimates, and the interpreation the statistics in this report, are subject to some unknown degree of bias as a result of gear selectivity, and non-random distributions of fish lengths in the habitats sampled. This highlights the need for quanitification of the fine-scale distribution and habitat use of coastal channels by migrating juvenile salmon, along a gradient of depth and distance from shore.
 
-We have now captured the entire four-year life cycle of Fraser River sockeye salmon, two years of odd-year dominant pink juveniles, and four years of chum migrations. However, we have only observed the early marine conditions experienced by a genetically distinct community of co-migrating salmon, four separate times. Each annual observation is a unique cohort of sockeye genetic stocks, and pink, chum, coho, and herring proportions. Replicated observations of sockeye genetic cycle lines will be possible beginning May 2019, when we observe the same cycle line we observed in 2015. 
+We have now captured the entire four-year life cycle of Fraser River sockeye salmon, two years of odd-year dominant pink juveniles, and four years of chum migrations. However, we have only observed the early marine conditions experienced by a genetically distinct community of co-migrating salmon, four separate times. Each annual observation is a unique cohort of sockeye genetic stocks, and pink, chum, coho, and herring proportions. Replicated observations of sockeye genetic cohorts will be possible beginning May 2019, when we observe the same cohort we observed in 2015. 
 
-In 2017 there was a coherent decline in adult sockeye salmon stocks in 2017 up and down the coast of British Columbia as a result of warm ocean conditions in the NE Pacific in 2015 and 2016 [@Chandler2018]. Record sea-surface temperatures in 2015, 2016, and 2018 likely drove juvenile salmon out of the Strait of Georgia one to two weeks earlier than historically.  Three of the last four years; 2015, 2016, and 2018 have been the warmest temperatures ever recorded (Chandler & Boldt, 2016) CHECK. Ultimately, because the last four years held anomalous atmospheric and ocean conditions, we observed juvenile salmon be impacted by and respond to climate change. As adult salmon return from the high-seas, having experienced these anomalous conditions, we will gain a better understanding of what the overall impact to salmon productivity will be. As we continue to dis-entangle the web of local and global weather and climate interactions, we will to identify the most important factors influencing early marine survival of Pacific salmon. 
+In 2017, there was a coherent decline in adult sockeye salmon stocks in 2017 up and down the coast of British Columbia as a result of warm ocean conditions in the NE Pacific in 2015 and 2016 [@Chandler2018]. Record sea-surface temperatures in 2015, 2016, and 2018 likely drove juvenile salmon out of the Strait of Georgia one to two weeks earlier than historically.  Three of the last four years; 2015, 2016, and 2018 have been the warmest temperatures ever recorded (Chandler & Boldt, 2016) CHECK. These types of persistent patterns have led to ocean-regime shifts in the past (REF; Beamish 2000a,d ,2001b from history aritcle...) and it's possible that marine food webs are again adapting to climate change. 
+
+Ultimately, because the last four years held anomalous atmospheric and ocean conditions, we observed juvenile salmon be impacted by and respond to climate change. As adult salmon return from the high-seas, having experienced these anomalous conditions, we will gain a better understanding of what the overall impact to salmon productivity will be. As we continue to dis-entangle the web of local and global weather and climate interactions, we will be able to identify the most important factors influencing early marine survival of Pacific salmon. 
 
 
 ```{r heatmap,  fig.cap = "This heatmap indicates the number of standard deviations (z-score) from the time series average (2015-2018) for key migration parameters. Size and colour saturation of circles indicates magnitude of the anomaly. Blue colour indicates less than average, grey indicates average, red indicates greater than average. Peak migration date is based on the median date of fish capture in the Discovery Islands. Length is based on the average fork length from the Discovery Islands and Johnstone Strait combined. Parasite load is the average abundance of all sea-louse species in their motile life stages for both the Discovery Islands and Johnstone Strait regions. “SST” describes the mean sea-surface temperature in the top 30 m at station QU39 in the northern Strait of Georgia in May and June.", out.width = "95%", fig.height=11, fig.width=10}
@@ -415,6 +421,7 @@ ggplot(heatmap_data, aes(year, spp, colour = Z)) +
   ylab("") +
   xlab("Year") +
   scale_colour_gradientn(colours = cols) +
+  ggsidekick::theme_sleek(base_size = 16) +
   theme(legend.position = "bottom") +
   guides(color = guide_legend(override.aes = list(size = c(10, 6, 3, 6, 10), alpha = 1)), name = "Z score") +
   labs(color = "Z Score") +
@@ -490,38 +497,6 @@ ggplot()+
 ggsave(here("figs", "migration_timing.png"))
 ```
 
-```{r condition-plot, fig.cap="Length and weight regressions for juvenile salmon caught in the Discovery Islands and Johnstone Strait in 2018 coloured red, compared to all outher years in black."}
-library(cowplot)
-library(ggpubr)
-time_series_fish_cond <- fish_cond %>% 
-  mutate(year = factor(year(date))) %>% 
-  filter(species %in% c("Sockeye", "Pink", "Chum", "Coho"),
-         year != current_year) %>% 
-  mutate(Years = "Time series")
-
-current_fish_cond <- fish_cond %>% 
-  filter(year == current_year) %>% 
-  mutate(Years = factor(current_year))
-
-
-#TODO: Add histograms to x and y axes
-
-plot <- ggplot(data = fish_cond, aes(x = fork_length, y = weight, colour= Years)) +
-  geom_point(data = time_series_fish_cond, alpha = .2, size = 3) +
-  geom_point(data = current_fish_cond, alpha = .2, size = 3) + 
-  ylab('Weight (g)')+
-  xlab('Length (mm)')+
-  labs(title = "Length Weight Relationships") +
-  coord_cartesian(xlim = c(60, 177), ylim = c(0, 80)) +
-  scale_color_manual(values=c("#B52025", "black")) +
-  theme(legend.position = c(.9, .9), legend.title=element_blank()) +
-  facet_wrap(~species, nrow=2) 
-
-plot
-ggsave(here("figs", "length_weight.png"))
-
-```
-
 ```{r catch-intensity-plot, fig.cap = "The catch intensity (our proxy for abundance) of sockeye, pink, and chum salmon in the Discovery Islands and Johnstone Strait. Numbers under each bar indicate the number of seines in which the species was caught, and erorr bars indicate the 95 percent confidence region.", out.width="90%"}
 
 catch_intensity$species <- catch_intensity$species %>% 
@@ -583,6 +558,40 @@ ggplot(length_histo, aes(fork_length, y = fct_rev(factor(year)), fill = species)
 ggsave(here("figs", "lengths.png"))
 ```
 
+
+```{r condition-plot, fig.cap="Length and weight regressions for juvenile salmon caught in the Discovery Islands and Johnstone Strait in 2018 coloured red, compared to all outher years in black."}
+library(cowplot)
+library(ggpubr)
+time_series_fish_cond <- fish_cond %>% 
+  mutate(year = factor(year(date))) %>% 
+  filter(species %in% c("Sockeye", "Pink", "Chum", "Coho"),
+         year != current_year) %>% 
+  mutate(Years = "Time series")
+
+current_fish_cond <- fish_cond %>% 
+  filter(year == current_year) %>% 
+  mutate(Years = factor(current_year))
+
+
+#TODO: Add histograms to x and y axes
+
+ggplot(data = fish_cond, aes(x = fork_length, y = weight, colour= Years)) +
+  geom_point(data = time_series_fish_cond, alpha = .2, size = 3) +
+  geom_point(data = current_fish_cond, alpha = .2, size = 3) + 
+  ylab('Weight (g)')+
+  xlab('Length (mm)')+
+  labs(title = "Length Weight Relationships") +
+  coord_cartesian(xlim = c(60, 177), ylim = c(0, 80)) +
+  scale_color_manual(values=c("#B52025", "black")) +
+  #theme(legend.position = c(.9, .9), legend.title=element_blank()) +
+  facet_wrap(~species, nrow=2) +
+  ggsidekick::theme_sleek(base_size = 14)
+
+ggsave(here("figs", "length_weight.png"))
+
+```
+
+
 ```{r sealice-abundance-plot, fig.cap="The abundance of motile sea lice on juvenile salmon in the Discovery Islands and Johnstone Strait. The numbers under each bar indicate the sample size and the error bars indicate the 95 percent confidence region.", out.width="90%"}
 
 lice_bootstraps$species <- factor(lice_bootstraps$species) %>% 
@@ -617,34 +626,8 @@ df %>%
       labs(fill = "Louse Species") + 
   theme(legend.text = element_text(face = "italic", size = 10)) +
   coord_cartesian(ylim = c(0, 1.7)) +
-  ggtitle("Sea Lice Abundance")
-  
-
-sealice_summary_table %>% 
-  select(Year, Region, Species, louse_species, n, Abundance, abundance_ci) %>% 
-  filter(louse_species != "all_lice") %>% 
-  mutate(louse_species = dplyr::recode(.$louse_species, motile_caligus = "C. clemensi", motile_lep = "L. salmonis")) %>% 
-  ggplot(aes(x = Year, y = Abundance, fill = louse_species,
-                 group = louse_species)) +
-      geom_bar(colour = "black", stat = "identity", position = position_dodge()) +
-      geom_errorbar(aes(ymin = Abundance - abundance_ci, 
-                        ymax = Abundance + abundance_ci), 
-                    width = 0.2,
-                    position = position_dodge(0.9)) +
-      facet_grid(Region ~ Species,
-                 labeller = labeller(Region = spp_labels)) +
-      labs(x = "Year", y = "Abundance") +
-      theme(legend.position="bottom") +
-      # geom_text(aes(label = ifelse(Abundance == 0, round(Abundance, 1), '')),
-      #          position = position_dodge(0.9), vjust = -0.5) +
-      # geom_text(aes(y = 0.0, label = paste0(n)), size = 3.15, vjust = 1.25,
-      #           position = position_dodge(0.9)) +
-     # scale_y_continuous(expand = expand_scale(mult = c(.15, 0))) +
-      coord_cartesian(ylim = c(0, 1.7)) +
-      scale_fill_hakai() +
-      labs(fill = "Louse Species") + 
-  theme(legend.text = element_text(face = "italic", size = 10)) +
-  ggtitle("Sea Lice Abundance")
+  ggtitle("Sea Lice Abundance") +
+  ggsidekick::theme_sleek()
 
 ggsave(here("figs", "sealice_abundance.png"))
 ```
@@ -711,7 +694,7 @@ sealice_summary_table %>%
 ggsave(here("figs", "sealice_intensity.png"))
 ```
 
-```{r sst-plot, out.width="90%", fig.cap="Sea-surace temperature (top 30 m) at station QU39 in the northern Strait of Georgia is the solid black line which is a LOESS regression based on temperatures from 2015-2018 representing the time series average. Blue areas represent temperatures from 2018 that are below average, red areas represent above average temperatures. The shaded grey area is 1 SE of the LOESS regression. The black dots are the daily minimum and maximum temperatures observed over the time series."}
+```{r sst-plot, out.width="90%", fig.cap="Sea-surface temperature (top 30 m) at station QU39 in the northern Strait of Georgia is the solid black line which is a LOESS regression based on temperatures from 2015-2018 representing the time series average. Blue areas represent temperatures from 2018 that are below average, red areas represent above average temperatures. The shaded grey area is 1 SE of the LOESS regression. The black dots are the daily minimum and maximum temperatures observed over the time series."}
 
 temperature_anomaly_data <- temperature_anomaly_data %>% 
       filter(station == "QU39")
@@ -744,7 +727,7 @@ ggplot(data = temperature_anomaly_data, aes(x = yday, y = mean_temp)) +
                                      "Jul", "Aug"))) +
       labs(x = "Date", y = "Temperature [°C]") +
       coord_cartesian(xlim = c(32,213)) +
-  ggtitle("Sea-surface Temperature Anomalies")
+  ggtitle("Sea-surface Temperature Anomalies") 
 
 ggsave(here("figs", "sst.png"))
 
@@ -807,7 +790,7 @@ df <- df %>%
          upper_ci = round(upper_ci, 2),
          "95% CI" = paste(lower_ci, "-", upper_ci)) %>% 
   select("Year" = "year", "Region" = "region", "Species" = "species",
-         "Louse Species" = "louse_species", "Mean Abundnance" = "mean_abund",
+         "Louse Species" = "louse_species", "Mean Abundance" = "mean_abund",
          "95% CI") %>% 
   mutate_if(is.numeric, round, 2)
 
