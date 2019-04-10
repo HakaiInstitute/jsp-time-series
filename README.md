@@ -1,5 +1,7 @@
 # Juvenile Salmon Program Migration Observations Time Series
-Respository for annual reporting of time series and manuscript for the Hakai Institute Juvenile Salmon Program.
+This is the respository for reportiong our annual juvenile salmone migration observations for the Hakai Institute Juvenile Salmon Program.
 
-See Migration_Observations_Report.Rmd in the 'Time Series PeerJ Format' folder for the source code that produced tables and figures. See data_wrangle.Rmd for the steps used to process and filter the data for analysis.
+See Migration_Observations_Report.Rmd for the source code that produced tables and figures. 
+
+See data_wrangle.Rmd for the steps used to process and filter the data for analysis, though you will need special permissions to run this script which can be requested by contacting the repository maintainers.
 
