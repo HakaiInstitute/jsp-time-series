@@ -45,7 +45,7 @@ library(car)
 library(ggridges)
 library(forcats)
 
-theme_set(ggsidekick::theme_sleek(base_size = 16)) #Thanks Sean Anderson, package hosted on GitHub
+theme_set(ggsidekick::theme_sleek(base_size = 17)) #Thanks Sean Anderson, package hosted on GitHub
 
      # Survey Data
 survey_seines <- read_csv(here("data", "survey_seines.csv")) %>%
@@ -404,7 +404,7 @@ In 2017, there was a coherent decline in adult sockeye salmon stocks in 2017 up 
 Ultimately, because the last four years held anomalous atmospheric and ocean conditions, we observed juvenile salmon be impacted by and respond to climate change. As adult salmon return from the high-seas, having experienced these anomalous conditions, we will gain a better understanding of what the overall impact to salmon productivity will be. As we continue to dis-entangle the web of local and global weather and climate interactions, we will be able to identify the most important factors influencing early marine survival of Pacific salmon. 
 
 
-```{r heatmap,  fig.cap = "This heatmap indicates the number of standard deviations (z-score) from the study-period average (2015-2018) for key migration parameters. Size and colour saturation of circles indicates magnitude of the anomaly. Blue colour indicates less than average, grey indicates average, red indicates greater than average. Peak migration date is based on the median date of fish capture in the Discovery Islands. Length is based on the average fork length from the Discovery Islands and Johnstone Strait combined. Parasite load is the average abundance of all sea-louse species in their motile life stages for both the Discovery Islands and Johnstone Strait regions. Ocean temperature describes the mean ocean temperature in the top 30 m at station QU39 in the northern Strait of Georgia in May and June.", out.width = "95%", fig.height=11, fig.width=10}
+```{r heatmap,  fig.cap = "This heatmap indicates the number of standard deviations (z-score) from the study-period average (2015-2018) for key migration parameters. Size and colour saturation of circles indicates magnitude of the anomaly. Blue colour indicates less than average, grey indicates average, red indicates greater than average. Peak migration date is based on the median date of fish capture in the Discovery Islands. Length is based on the average fork length from the Discovery Islands and Johnstone Strait combined. Parasite load is the average abundance of all sea-louse species in their motile life stages for both the Discovery Islands and Johnstone Strait regions. Ocean temperature describes the mean ocean temperature in the top 30 m at station QU39 in the northern Strait of Georgia in May and June.", out.width = "100%", fig.height=11, fig.width=10}
 
 cols <- c("#4575b4",
           "lightgrey",
@@ -422,22 +422,22 @@ ggplot(heatmap_data, aes(year, spp, colour = Z)) +
   ylab("") +
   xlab("Year") +
   scale_colour_gradientn(colours = cols) +
-  ggsidekick::theme_sleek(base_size = 18) +
+  ggsidekick::theme_sleek(base_size = 19) +
   theme(legend.position = "bottom") +
   guides(color = guide_legend(override.aes = list(size = c(10, 6, 3, 6, 10), alpha = 1)), name = "Z score") +
   labs(color = "Z Score") +
   scale_y_discrete(expand = expand_scale(mult = c(.75, .75))) +
   scale_x_continuous(expand = expand_scale(mult = c(.1, .1)), minor_breaks = 0) +
-  labs(title = "Migration Observations",
+  labs(title = "Juvenile Salmon Migration Observations",
     subtitle = "Migration parameter variability 2015-2018") +
   #theme(panel.grid.major.y= element_line("grey")) +
-  facet_wrap(. ~ measure, ncol = 1, scales = "free")
+  facet_wrap(. ~ measure, ncol = 1, scales = "free") 
 
-ggsave(here("figs", "heatmap.png"), width = 11, height = 12)
+ggsave(here("figs", "heatmap.png"), width = 13, height = 11)
 ```
 
 
-```{r migration-timing-plot, fig.cap = "Cumulative annual abundance of sockeye, pink, and chum, in the Discovery Islands and Johnstone Strait compared to the study-period average.", out.width="90%"}
+```{r migration-timing-plot, fig.cap = "Cumulative annual abundance of sockeye, pink, and chum, in the Discovery Islands and Johnstone Strait compared to the study-period average.", out.width="100%"}
 cols <-
   c(
     "2018" = "#aa1f25",
@@ -494,7 +494,8 @@ ggplot()+
   theme(panel.grid.major.y= element_line("#DCDCDC")) +
   theme(panel.grid.major.x= element_line("#DCDCDC")) +
   facet_grid(species ~ .) +
-  ggtitle("Migration Timing") 
+  ggtitle("Migration Timing") +
+  ggsidekick::theme_sleek()
     
 ggsave(here("figs", "migration_timing.png"), width = 9, height = 6)
 ```
@@ -557,7 +558,7 @@ ggplot(length_histo, aes(fork_length, y = fct_rev(factor(year)), fill = species)
   guides(fill = FALSE) +
   ggtitle("Fork Length Frequency Distributions")
 
-ggsave(here("figs", "lengths.png"))
+ggsave(here("figs", "lengths.png"), width = 8, height = 6)
 ```
 
 
@@ -589,7 +590,7 @@ ggplot(data = fish_cond, aes(x = fork_length, y = weight, colour= Years)) +
   facet_wrap(~species, nrow=2) +
   ggsidekick::theme_sleek(base_size = 14)
 
-ggsave(here("figs", "length_weight.png"))
+ggsave(here("figs", "length_weight.png"), width = 8, height = 6)
 
 ```
 
@@ -730,7 +731,7 @@ ggplot(data = temperature_anomaly_data, aes(x = yday, y = mean_temp)) +
       labs(x = "Date", y = "Temperature [°C]") +
       coord_cartesian(xlim = c(32,213)) +
   labs(title = "2018 Temperatures",
-       subtitle = "2018 compared to study period average") 
+       subtitle = "Compare 2018 (coloured red and blue) to study-period average (black line)") 
 
 ggsave(here("figs", "sst.png"), width = 8, height = 6)
 
