@@ -30,6 +30,7 @@ survey_seines <- hakaisalmon::survey_seines %>%
          collection_protocol == "SEMSP",
          set_type == "targeted") %>%
   # only include consistently sampled sites with similar catchabilities
+  # TODO: Update these sites to inlcude 2019 sites
   filter(
     site_id %in% c(
       "D07",
