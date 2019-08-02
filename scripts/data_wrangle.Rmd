@@ -17,14 +17,53 @@ library(lubridate)
 library(knitr)
 library(here)
 library(car)
-
+# This same data warngling file should be used for the pdf report as well as the shiny app
 f <- function(x) {
   format(x + as.Date("2018-01-01") -1, format = "%B %d")
 }
 
-# This same data warngling file should be used for the pdf report as well as the shiny app
+# Currently 2019 field and lab data are not thoroughly QC'd and entered into our
+# database; In the meantime we'll use the raw data from googlesheets.
+# TODO: Replace all 2019 raw googlesheet data with QC'd JSP database data
+  
+# Add in 2019 field data from google sheet
+library(googlesheets)
+field_2019 <- gs_key("1cHgZszv--FlV207cwSpe9hFJipb7HhS4IW9vVrUNg8M",
+                     lookup = FALSE, visibility = "private")
 
-survey_seines <- hakaisalmon::survey_seines %>% 
+survey_data <- gs_read(field_2019, ws = "survey_data") %>% 
+  drop_na(survey_id) %>% 
+  mutate(sampling_week = as.numeric((yday(survey_date) + 4) %/% 7)) 
+
+survey_data$sampling_week <- recode_factor(survey_data$sampling_week, 
+                                           `18` = "May 5",
+                                           `19` = "May 12" ,
+                                           `20` = "May 19", 
+                                           `21` = "May 26",
+                                           `22` = "June 2",
+                                           `23` = "June 9", 
+                                           `24` = "June 16", 
+                                           `25` = "June 23",
+                                           `26` = "June 30", 
+                                           `27` = "July 6", 
+                                           `28` = "July 13")
+
+
+seine_data <- gs_read(field_2019, ws = "seine_data")
+
+survey_seines_2019 <- full_join(seine_data, survey_data) %>% 
+  mutate(year = year(survey_date)) %>% 
+  drop_na(survey_id) %>% 
+  mutate(yday = yday(survey_date)) 
+
+rm(survey_data)
+rm(seine_data)
+
+# Import data from 2015-2018
+survey_seines_2015_2018 <- hakaisalmon::survey_seines
+
+
+survey_seines_2015_2018 <- survey_seines_2015_2018 %>% 
   # remove ad-hoc collections from migration timing calcs
   filter(survey_type == "standard",
          collection_protocol == "SEMSP",
@@ -51,19 +90,60 @@ survey_seines <- hakaisalmon::survey_seines %>%
          yday = yday(survey_date)
   ) %>% 
   # filter out sampling events from beyond the normal sampling period. (May 1 - July 9)
-  filter(yday < 190) 
+  filter(yday < 190) %>% 
+  # remove columns that were not used in 2019
+  select(-time_searching)
 
-saveRDS(survey_seines, here::here("data", "survey_seines.RDS"))
+# Join 2015-2018 wirh 2019 data
+survey_seines <- full_join(survey_seines_2019, survey_seines_2015_2018)
+
+survey_seines$sampling_week <- recode_factor(survey_seines$sampling_week, 
+                                           `18` = "May 5",
+                                           `19` = "May 12" ,
+                                           `20` = "May 19", 
+                                           `21` = "May 26",
+                                           `22` = "June 2",
+                                           `23` = "June 9", 
+                                           `24` = "June 16", 
+                                           `25` = "June 23",
+                                           `26` = "June 30", 
+                                           `27` = "July 6", 
+                                           `28` = "July 13")
+
 write_csv(survey_seines, here::here("data", "survey_seines.csv"))
 
-current_year <- max(year(survey_data$survey_date))
+rm(survey_seines_2015_2018)
+
+current_year <- max(survey_seines$year, na.rm = T)
 project_years <- current_year - 2015 + 1
 study_range <- paste(2015, "-", current_year)
-
 ```
 
 ```{r sealice}
+# Bring in 2019 raw data from google sheets to join
+fish_field_data_2019 <- gs_read(field_2019, ws = "fish_field_data")
+survey_seines_fish_2019 <- left_join(survey_seines_2019, fish_field_data_2019) %>% 
+  drop_na(ufn)
 
+sealice_field_data_2019 <- gs_read(field_2019, 
+                                       ws = "sealice_field_data")
+
+fish_and_sealice_field_data_2019 <- left_join(survey_seines_fish_2019, sealice_field_data_2019) %>%
+  drop_na(ufn) %>% 
+  mutate(all_lice = cal_mot + cpaf + caf + cgf + lpam, lpaf, lam, laf, lgf,
+         motile_caligus = cal_mot + cpaf + caf + cgf,
+         motile_lep = lpam + lpaf + lam + laf + lgf) %>% 
+  select(ufn, survey_date, site_id, region, species, year, all_lice, motile_caligus, motile_lep) %>% 
+  gather(`motile_caligus`,
+         `motile_lep`,
+         `all_lice`,
+         key = louse_species,
+         value = n_lice) %>% 
+  select(ufn, survey_date, site_id, region, species, louse_species, n_lice, year) %>% 
+  # I think this correctly creates zeros where NAs are created by default
+  drop_na(n_lice)
+
+#### end 2019 update section
 sealice_lab_motiles <- hakaisalmon::sealice_lab_motiles
 sealice_field <- hakaisalmon::sealice_field
 
@@ -150,6 +230,15 @@ sealice_time_series <- motile_lice %>%
          motile_lep,
          motile_caligus,
          all_lice) %>%
+   gather(`motile_caligus`,
+         `motile_lep`,
+         `all_lice`,
+         key = louse_species,
+         value = n_lice) %>%
+  mutate(year = year(survey_date)
+  ) %>% 
+  bind_rows(fish_and_sealice_field_data_2019) %>% 
+  #TODO: Consider whether these are the appropriate sites
   filter(
     site_id %in% c(
       "D07",
@@ -166,18 +255,10 @@ sealice_time_series <- motile_lice %>%
       "J11"
     )
   ) %>%
-  gather(`motile_caligus`,
-         `motile_lep`,
-         `all_lice`,
-         key = louse_species,
-         value = n_lice) %>%
   drop_na() %>%
-  mutate(year = year(survey_date)
-  ) %>% 
   filter(species %in% c("SO", "PI", "CU"))
 
 write_csv(sealice_time_series, here("data", "sealice_time_series.csv"))
-saveRDS(sealice_time_series, here("data", "sealice_time_series.rds"))
 
 abundance_df <- sealice_time_series %>% 
   group_by(year, region, louse_species, species) %>% 
@@ -226,7 +307,6 @@ sealice_summary_table <- full_join(abundance_df, prevalence) %>%
   mutate(Year = as.character(Year))
 
 write.csv(sealice_summary_table, here("data", "sealice_summary_table.csv"))
-saveRDS(sealice_summary_table, here("data", "sealice_summary_table.RDS"))
 
 ```
 
@@ -275,7 +355,6 @@ separate(category, into = c("year", "region", "site_id", "year2", "month", "day"
   select(-year, year = year2)
 
 readr::write_csv(lice_bootstraps, here("data", "lice_bootstraps.csv"))
-saveRDS(lice_bootstraps, here("data", "lice_bootstraps.rds"))
 
 beepr::beep(8)
 ```
@@ -304,13 +383,19 @@ catch_intensity <- catch_intensity %>%
   mutate_if(is.numeric, round, 1)
 
 write_csv(catch_intensity, here::here("data", "catch_intensity.csv"))
-saveRDS(catch_intensity, here::here("data", "catch_intensity.RDS"))
+
 ```
 
 ```{r Migration Timing}
+#TODO: better deal with doubled intensity during peak this year, rather than simply removing extra seines as done below
+
+# Manually remove additional seines conducted during doubled effort period of peak migration
+
 # I first take Cumulative abundance
 
 tidy_catch <- survey_seines %>%
+  #remove doubled up seines
+  filter(!survey_id %in% c('DE610', 'DE611', 'DE612', 'DE613', 'DE615','DE624', 'DE625', 'DE626', 'DE627')) %>% 
   select(
     survey_date,
     seine_id,
@@ -342,12 +427,12 @@ tidy_catch <- tidy_catch %>%
 
 # TIME SERIES AVERAGES
 
-# Create a table with time series average daily proportion for each species and each region for all years combined (2015-2018)
+# Create a table with time series average daily proportion for each species and each region for all years combined 
 
 #Sockeye
 so_total_daily_mean_cumul_abund <- tidy_catch %>%
   #First create cumulative proportion for each year individually
-  filter(species == "so_total") %>%
+  filter(species == "so_total", year != current_year) %>%
   mutate(
     yday = yday(survey_date),
     week = week(survey_date),
@@ -390,7 +475,7 @@ so_total_predict_average_prop_DI <-
 #Pink
 pi_total_daily_mean_cumul_abund <- tidy_catch %>%
   #First create cumulative proportion for each year individually
-  filter(species == "pi_total") %>%
+  filter(species == "pi_total", year != current_year) %>%
   # figure out if a year is odd or even and filter out odd years
   mutate(even_or_odd = year %% 2) %>% 
   filter(even_or_odd != 1) %>% 
@@ -436,7 +521,7 @@ pi_total_predict_average_prop_DI <-
 # Chum
 cu_total_daily_mean_cumul_abund <- tidy_catch %>%
   #First create cumulative proportion for each year individually
-  filter(species == "cu_total") %>%
+  filter(species == "cu_total", year != current_year) %>%
   mutate(
     yday = yday(survey_date),
     week = week(survey_date),
@@ -488,8 +573,6 @@ predict_average_prop <-
 predict_average_prop$species <- factor(predict_average_prop$species) %>% 
   fct_recode("Sockeye" = "so_total", "Pink" = "pi_total", "Chum" = "cu_total")
 
-saveRDS(predict_average_prop,
-        here::here("data", "predict_average_prop.RDS"))
 write_csv(predict_average_prop,
           here::here("data", "predict_average_prop.csv"))
 
@@ -646,6 +729,36 @@ cu_predict_annual_prop_DI_2018 <-
   mutate(region = "DI", year = 2018) %>%
   mutate(daily_percent = y - lag(y), species = "CU")
 
+#2019 modeled cumulative abundance
+# sockeye
+so_cum_abund_annual_DI_2019 <- daily_mean_cumul_abund_annual %>%
+  filter(species == "so_total", year == 2019)
+
+so_predict_annual_prop_DI_2019 <-
+  log_cumul_abund(so_cum_abund_annual_DI_2019$percent,
+                  so_cum_abund_annual_DI_2019$survey_date) %>%
+  mutate(region = "DI", year = 2019) %>%
+  mutate(daily_percent = y - lag(y), species = "SO")
+
+# pink
+pi_cum_abund_annual_DI_2019 <- daily_mean_cumul_abund_annual %>%
+  filter(species == "pi_total", year == 2019)
+
+pi_predict_annual_prop_DI_2019 <-
+  log_cumul_abund(pi_cum_abund_annual_DI_2019$percent,
+                  pi_cum_abund_annual_DI_2019$survey_date) %>%
+  mutate(region = "DI", year = 2019) %>%
+  mutate(daily_percent = y - lag(y), species = "PI")
+
+# chum
+cu_cum_abund_annual_DI_2019 <- daily_mean_cumul_abund_annual %>%
+  filter(species == "cu_total", year == 2019)
+
+cu_predict_annual_prop_DI_2019 <-
+  log_cumul_abund(cu_cum_abund_annual_DI_2019$percent,
+                  cu_cum_abund_annual_DI_2019$survey_date) %>%
+  mutate(region = "DI", year = 2019) %>%
+  mutate(daily_percent = y - lag(y), species = "CU")
 
 # Put each years modelled cumulative abundnance into one table
 predict_annual_prop <-
@@ -659,14 +772,16 @@ predict_annual_prop <-
     cu_predict_annual_prop_DI_2017, 
     so_predict_annual_prop_DI_2018,
     pi_predict_annual_prop_DI_2018,
-    cu_predict_annual_prop_DI_2018
+    cu_predict_annual_prop_DI_2018,
+    so_predict_annual_prop_DI_2019,
+    pi_predict_annual_prop_DI_2019,
+    cu_predict_annual_prop_DI_2019
   )
 
 predict_annual_prop$species <- factor(predict_annual_prop$species) %>% 
   fct_recode("Sockeye" = "SO", "Pink" = "PI", "Chum" = "CU")
 
 write_csv(predict_annual_prop, here::here("data", "predict_annual_prop.csv"))
-saveRDS(predict_annual_prop, here::here("data", "predict_annual_prop.RDS"))
 
 # Create data table for real (not modelled), q1, q2, q3 migration timing stats
 peak_dates <- tidy_catch[rep(row.names(tidy_catch), tidy_catch$n), 1:6] %>%
@@ -700,12 +815,17 @@ tsa_peak_dates <- peak_dates %>%
 peak_dates <- bind_rows(tsa_peak_dates, peak_dates)
 
 write_csv(peak_dates, here("data","peak_dates.csv"))
-saveRDS(peak_dates, here("data", "peak_dates.RDS"))
-
-
 ```
 
 ```{r Condition}
+#TODO: Update so length and weight data come from the JSP database not EIMS Data Portal
+#TODO: Filter lengths and weights to only fish from between May 1 and July 9
+fish_field_data_2019 <- gs_read(field_2019, ws = "fish_field_data")
+ 
+survey_seines_fish_2019 <- left_join(survey_seines_2019, fish_field_data_2019) %>% 
+  select(date, species, weight, fork_length) %>%
+  mutate(year = factor(year(date))) %>% 
+  drop_na()
 
 library('hakaiApi')
 library('tidyverse')
@@ -714,20 +834,19 @@ library(lubridate)
 # Run this line independently before the rest of the code to get the API authentication
 client <- hakaiApi::Client$new() # Follow stdout prompts to get an API token
 
-# Make a data request for chlorophyll data
+# Make a data request for fish data
 endpoint <- sprintf("%s/%s", client$api_root, "eims/views/output/jsp_fish?limit=-1")
 fish_cond <- client$get(endpoint) %>% 
   select(date, species, weight, fork_length) %>% 
   filter(species %in% c('SO', 'PI', 'CU', 'CO')) %>% 
-  mutate(year = factor(year(date)))
+  mutate(year = factor(year(date))) %>% 
+  bind_rows(survey_seines_fish_2019)
 
 write_csv(fish_cond, here("data", "fish_cond.csv"))
-
-
 ```
 
 ```{r Species Proportions}
-# SPECIES PROPORTIONS
+
 
 spp_prop <- survey_seines %>%
   select(
@@ -766,7 +885,6 @@ proportions <- spp_prop_expanded %>%
   mutate(proportion = n / sum(n)) %>%
   ungroup()
 
-saveRDS(proportions, here::here("data", "proportion.RDS"))
 write_csv(proportions, here::here("data", "proportion.csv"))
 ```
 
@@ -854,12 +972,11 @@ ctd_all <- rbind(qu39_all, qu29_all, js2_12_all) %>%
     mean_salinity = mean(salinity, na.rm = T)
   )
 
-saveRDS(ctd_all, here::here("data", "ctd_all.RDS"))
 write_csv(ctd_all, here::here("data", "ctd_all.csv"))
 
 ## Create current year data to compare to time series
 ctd_post_time_series <- rbind(qu39_all, qu29_all, js2_12_all) %>%
-  filter(year == 2018, yday > 32, yday < 213,  depth <= 30) %>%
+  filter(year == current_year, yday > 32, yday < 213,  depth <= 30) %>%
   select(
     year,
     date,
@@ -882,14 +999,14 @@ ctd_post_time_series <- rbind(qu39_all, qu29_all, js2_12_all) %>%
 ## SST ANOMALY DATA
 ## QU39
 qu39_average <- ctd_all %>%
-  filter(station == "QU39")
+  filter(station == "QU39", year(date) != current_year)
 
 # Filter down to station of interest
 qu39_this_year <- ctd_post_time_series %>%
   filter(station == "QU39")
 
 temp.lo_qu39 <-
-  loess(mean_temp ~ yday, qu39_average, SE = T, span = 0.65)
+  loess(mean_temp ~ yday, qu39_average, SE = T, span = 0.35)
 
 #create table for predicitions from loess function
 sim_temp_data_qu39 <-
@@ -908,49 +1025,47 @@ qu39_temp_anomaly_data <-
   left_join(sim_temp_data_qu39, qu39_this_year) %>%
   mutate(diff = if_else(mean_temp > predicted_mean_temp, "pos", "neg")) %>%
   drop_na(diff) %>%
-  add_row(
+   add_row(
     station = "QU39",
-    yday = 47.5,
-    predicted_mean_temp = predict(temp.lo_qu39, 47.5),
-    mean_temp = predict(temp.lo_qu39, 47.5)
+    yday = (36 + 43) / 2,
+    predicted_mean_temp = predict(temp.lo_qu39, (36 + 43) / 2),
+    mean_temp = predict(temp.lo_qu39, (36 + 43) / 2)
   ) %>%
   add_row(
     station = "QU39",
-    yday = 124,
-    predicted_mean_temp = predict(temp.lo_qu39, 124),
-    mean_temp = predict(temp.lo_qu39, 124)
+    yday = (129 + 142) / 2,
+    predicted_mean_temp = predict(temp.lo_qu39, (129 + 142) / 2),
+    mean_temp = predict(temp.lo_qu39, (129 + 142) / 2)
   ) %>%
   add_row(
     station = "QU39",
-    yday = (145 + 149) / 2,
-    predicted_mean_temp = predict(temp.lo_qu39, (145 + 149) / 2),
-    mean_temp = predict(temp.lo_qu39, (145 + 149) / 2)
+    yday = (142 + 149) / 2,
+    predicted_mean_temp = predict(temp.lo_qu39, (142 + 149) / 2),
+    mean_temp = predict(temp.lo_qu39, (142 + 149) / 2)
   ) %>%
   add_row(
     station = "QU39",
     yday = (155 + 149) / 2,
     predicted_mean_temp = predict(temp.lo_qu39, (155 + 149) / 2),
     mean_temp = predict(temp.lo_qu39, (155 + 149) / 2)
-  ) %>%
-  add_row(station = "QU39",
-    yday = (162 + 169) / 2,
-    predicted_mean_temp = predict(temp.lo_qu39, (162 + 169) / 2),
-    mean_temp = predict(temp.lo_qu39, (162 + 169) / 2)) %>% 
-  add_row(station = "QU39",
-    yday = (171 + 169) / 2,
-    predicted_mean_temp = predict(temp.lo_qu39, (171 + 169) / 2),
-    mean_temp = predict(temp.lo_qu39, (171 + 169) / 2)) %>% 
+  ) %>% 
   add_row(
     station = "QU39",
-    yday = (192 + 177) / 2,
-    predicted_mean_temp = predict(temp.lo_qu39, (192 + 177) / 2),
-    mean_temp = predict(temp.lo_qu39, (192 + 177) / 2)
-  ) %>%
+    yday = (155 + 171) / 2,
+    predicted_mean_temp = predict(temp.lo_qu39, (155 + 171) / 2),
+    mean_temp = predict(temp.lo_qu39, (155 + 171) / 2)
+  ) %>% 
   add_row(
     station = "QU39",
-    yday = 211.5,
-    predicted_mean_temp = predict(temp.lo_qu39, 211.5),
-    mean_temp = predict(temp.lo_qu39, 211.5)
+    yday = (176 + 184) / 2,
+    predicted_mean_temp = predict(temp.lo_qu39, (176 + 184) / 2),
+    mean_temp = predict(temp.lo_qu39, (176 + 184) / 2)
+  ) %>% 
+  add_row(
+    station = "QU39",
+    yday = (211 + 199) / 2,
+    predicted_mean_temp = predict(temp.lo_qu39, (211 + 199) / 2),
+    mean_temp = predict(temp.lo_qu39, (211 + 199) / 2)
   )
 
 # Create min and max for any given day of the time series
@@ -972,7 +1087,7 @@ qu29_average <- ctd_all %>%
 qu29_this_year <- ctd_post_time_series %>%
   filter(station == "QU29")
 
-temp.lo_qu29 <- loess(mean_temp ~ yday, qu29_average, span = 0.65)
+temp.lo_qu29 <- loess(mean_temp ~ yday, qu29_average, span = 0.35)
 
 #create table for predicitions from loess function
 sim_temp_data_qu29 <-
@@ -1030,7 +1145,7 @@ temp.lo_js2_12 <-
   loess(mean_temp ~ yday,
         js2_12_average,
         SE = T,
-        span = 0.65)
+        span = 0.35)
 
 #create table for predicitions from loess function
 sim_temp_data_js2_12 <-

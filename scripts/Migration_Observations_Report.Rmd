@@ -65,7 +65,7 @@ spp_labels <- c(CU = "Chum", PI = "Pink", SO = "Sockeye", DI = "Discovery Island
 pl_colours <- c("pi_total" = "pink", "so_total" = "#00BFC4", "cu_total" = "#7CAE00", 
                     "co_total" = "#F8766D", "he_total" = "#C77CFF")
 
-current_year <- max(year(survey_data$survey_date))
+current_year <- max(survey_seines$year, na.rm = T)
 project_years <- current_year - 2015 + 1
 study_range <- paste(2015, "-", current_year)
 
@@ -372,6 +372,7 @@ ggsave(here("figs", "heatmap.png"), width = 13, height = 11)
 ```{r migration-timing-plot, fig.cap = "Cumulative catch of sockeye, pink, and chum, in the Discovery Islands and Johnstone Strait between 2015 and 2017.", out.width="100%"}
 cols <-
   c(
+    "2019" = "blue",
     "2018" = "#aa1f25",
     "2017" = "#a58457",
     "2016" = "#346257",
@@ -380,6 +381,7 @@ cols <-
 shapes <-
   c(
     "2015-2018" = "triangle",
+    "2019" = "circle",
     "2018" = "circle",
     "2017" = "circle",
     "2016" = "circle",
@@ -420,8 +422,8 @@ ggplot()+
       coord_cartesian(xlim = c(128, 190)) + 
       #scale_shape_manual(values = shapes) +
       scale_colour_manual(values = cols, name="",
-                         breaks=c("2015-2018", "2015", "2016", "2017", "2018"),
-                         labels=c("Average", "2015", "2016", "2017", "2018")) +
+                         breaks=c("2015-2018", "2015", "2016", "2017", "2018", "2019"),
+                         labels=c("Average", "2015", "2016", "2017", "2018", "2019")) +
   theme(legend.position = c(0.9, 0.5)) +
   theme(panel.grid.major.y= element_line("#DCDCDC")) +
   theme(panel.grid.major.x= element_line("#DCDCDC")) +
@@ -560,7 +562,7 @@ df %>%
       scale_fill_hakai() +
       labs(fill = "Louse Species") + 
   theme(legend.text = element_text(face = "italic", size = 10)) +
-  coord_cartesian(ylim = c(0, 1.7)) +
+  #coord_cartesian(ylim = c(0, 1.7)) +
   ggtitle("Sea Lice Abundance") +
   ggsidekick::theme_sleek()
 
@@ -640,9 +642,10 @@ temperature_anomaly_data <- temperature_anomaly_data %>%
     average_temps <- average_temps %>% 
       filter(station == "QU39")
 
+#TODO: plot only this seasons observations as points and remove min max data
 ggplot(data = temperature_anomaly_data, aes(x = yday, y = mean_temp)) +
       geom_point(aes(x = yday, y = predicted_mean_temp), size = 0.1)+
-      geom_line(aes(x = yday, y = predicted_mean_temp)) +
+      geom_line(aes(x = yday, y = predicted_mean_temp), size = 1 ) +
       geom_ribbon(data = subset(temperature_anomaly_data, 
                                 mean_temp >= predicted_mean_temp),
                   aes(ymin = predicted_mean_temp, ymax = mean_temp),
@@ -651,19 +654,17 @@ ggplot(data = temperature_anomaly_data, aes(x = yday, y = mean_temp)) +
                                 mean_temp <= predicted_mean_temp), 
                   aes(ymin = mean_temp, ymax = predicted_mean_temp),
                   fill = "#4575b4", size = 1)+
-      geom_smooth(data = average_temps, aes(x = yday, y = mean_temp),
-                  size = 1, colour = 'black', se = T, span = .65) +
-      geom_point(data = min_max_data,
-                 aes(x = yday, y = min_temp), size = 0.5) +
-      geom_point(data = min_max_data,
-                 aes(x = yday, y = max_temp), size = 0.5) + 
+      # geom_smooth(data = average_temps, aes(x = yday, y = mean_temp),
+      #             size = 1, colour = 'black', se = T, span = .65) +
+      # geom_point(data = min_max_data,
+      #            aes(x = yday, y = min_temp), size = 0.5) +
       scale_x_continuous(breaks = (c(32, 60, 91, 121, 152, 182, 213)),
                          labels = (c("Feb", "Mar", "Apr", "May", "Jun", 
                                      "Jul", "Aug"))) +
       labs(x = "Date", y = "Temperature [°C]") +
       coord_cartesian(xlim = c(32,213)) +
-  labs(title = "2018 Temperatures",
-       subtitle = "Compare 2018 (coloured red and blue) to study-period average (black line)") 
+  labs(title = "2019 Temperatures",
+       subtitle = "Compare 2019 (coloured red and blue) to study-period average (black line)") 
 
 ggsave(here("figs", "sst.png"), width = 8, height = 6)
 
