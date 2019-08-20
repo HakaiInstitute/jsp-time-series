@@ -111,6 +111,7 @@ survey_seines$sampling_week <- recode_factor(survey_seines$sampling_week,
                                            `28` = "July 13")
 
 write_csv(survey_seines, here::here("data", "survey_seines.csv"))
+saveRDS(survey_seines,  here::here("data", "survey_seines.RDS"))
 
 rm(survey_seines_2015_2018)
 
@@ -259,6 +260,7 @@ sealice_time_series <- motile_lice %>%
   filter(species %in% c("SO", "PI", "CU"))
 
 write_csv(sealice_time_series, here("data", "sealice_time_series.csv"))
+saveRDS(sealice_time_series,  here::here("data", "sealice_time_series.RDS"))
 
 abundance_df <- sealice_time_series %>% 
   group_by(year, region, louse_species, species) %>% 
@@ -307,7 +309,7 @@ sealice_summary_table <- full_join(abundance_df, prevalence) %>%
   mutate(Year = as.character(Year))
 
 write.csv(sealice_summary_table, here("data", "sealice_summary_table.csv"))
-
+saveRDS(sealice_summary_table,  here::here("data", "sealice_summary_table.RDS"))
 ```
 
 ```{r sealice bootstrapping}
@@ -355,7 +357,7 @@ separate(category, into = c("year", "region", "site_id", "year2", "month", "day"
   select(-year, year = year2)
 
 readr::write_csv(lice_bootstraps, here("data", "lice_bootstraps.csv"))
-
+saveRDS(lice_bootstraps,  here::here("data", "lice_bootstraps.RDS"))
 beepr::beep(8)
 ```
 
@@ -383,7 +385,7 @@ catch_intensity <- catch_intensity %>%
   mutate_if(is.numeric, round, 1)
 
 write_csv(catch_intensity, here::here("data", "catch_intensity.csv"))
-
+saveRDS(catch_intensity,  here::here("data", "catch_intensity.RDS"))
 ```
 
 ```{r Migration Timing}
@@ -575,6 +577,7 @@ predict_average_prop$species <- factor(predict_average_prop$species) %>%
 
 write_csv(predict_average_prop,
           here::here("data", "predict_average_prop.csv"))
+saveRDS(predict_average_prop, here::here("data", "predict_average_prop.RDS"))
 
 # ANNUAL CUMULATIVE ABUNDANCE CURVES FOR EACH SPECIES
 
@@ -684,7 +687,8 @@ cu_cum_abund_annual_DI_2017$species <- "Chum"
 # For now, I'll fjust use raw points without a line
 # TODO: Consider removing this data frame, depending on further model selection
 write_csv(cu_cum_abund_annual_DI_2017, here("data", "cu_cum_abund_DI_2017.csv"))
-          
+saveRDS(cu_cum_abund_annual_DI_2017, here::here("data", "cu_cum_abund_annual_DI_2017.RDS"))          
+
 cu_predict_annual_prop_DI_2017 <-
   log_cumul_abund(cu_cum_abund_annual_DI_2017$percent,
                   cu_cum_abund_annual_DI_2017$survey_date) %>%
@@ -697,6 +701,7 @@ cu_cum_abund_2017 <- cu_cum_abund_annual_DI_2017 %>%
 
 # For now, I'll fjust use raw points without a line
 write_csv(cu_cum_abund_2017, here("data", "cu_cum_abund_2017.csv"))
+saveRDS(cu_cum_abund_2017, here::here("data", "cu_cum_abund_2017.RDS"))
 
 #2018 modeled cumulative abundance
 # sockeye
@@ -782,6 +787,7 @@ predict_annual_prop$species <- factor(predict_annual_prop$species) %>%
   fct_recode("Sockeye" = "SO", "Pink" = "PI", "Chum" = "CU")
 
 write_csv(predict_annual_prop, here::here("data", "predict_annual_prop.csv"))
+saveRDS(predict_annual_prop, here::here("data", "predict_annual_prop.csv"))
 
 # Create data table for real (not modelled), q1, q2, q3 migration timing stats
 peak_dates <- tidy_catch[rep(row.names(tidy_catch), tidy_catch$n), 1:6] %>%
@@ -815,6 +821,7 @@ tsa_peak_dates <- peak_dates %>%
 peak_dates <- bind_rows(tsa_peak_dates, peak_dates)
 
 write_csv(peak_dates, here("data","peak_dates.csv"))
+saveRDS(peak_dates, here::here("data", "peak_dates.RDS"))
 ```
 
 ```{r Condition}
@@ -843,6 +850,7 @@ fish_cond <- client$get(endpoint) %>%
   bind_rows(survey_seines_fish_2019)
 
 write_csv(fish_cond, here("data", "fish_cond.csv"))
+saveRDS(fish_cond, here("data", "fish_cond.RDS"))
 ```
 
 ```{r Species Proportions}
@@ -886,6 +894,7 @@ proportions <- spp_prop_expanded %>%
   ungroup()
 
 write_csv(proportions, here::here("data", "proportion.csv"))
+saveRDS(proportions, here::here("data", "proportion.RDS"))
 ```
 
 ```{r SST}
@@ -973,6 +982,7 @@ ctd_all <- rbind(qu39_all, qu29_all, js2_12_all) %>%
   )
 
 write_csv(ctd_all, here::here("data", "ctd_all.csv"))
+saveRDS(ctd_all, here::here("data", "ctd_all.RDS"))
 
 ## Create current year data to compare to time series
 ctd_post_time_series <- rbind(qu39_all, qu29_all, js2_12_all) %>%
@@ -1434,19 +1444,23 @@ SD <- c(rep(NA, project_years), so_catch_intensity$sd, so_mean_sd$sd, so_api_ann
         rep(NA, project_years), pi_catch_intensity$sd, PI_mean_sd$sd, PI_api_annual_mean$sd,
         rep(NA, project_years), cu_catch_intensity$sd, CU_mean_sd$sd, CU_api_annual_mean$sd)
 
-ts_mean <- rep(c(f(so_mean_of_median_date), so_mean_catch_intensity, round(so_avg_length[2], 1), so_api_mean,
-                 f(PI_mean_of_median_date), pi_mean_catch_intensity, round(PI_avg_length[2], 1), PI_api_mean,
-                 f(CU_mean_of_median_date), cu_mean_catch_intensity, round(CU_avg_length[2], CU_api_mean), 1), each= project_years)
+ts_mean <- rep(c(f(so_mean_of_median_date), so_mean_catch_intensity,
+                 round(so_avg_length[2], 1), so_api_mean,
+                 f(PI_mean_of_median_date), pi_mean_catch_intensity, 
+                 round(PI_avg_length[2], 1), PI_api_mean,
+                 f(CU_mean_of_median_date), cu_mean_catch_intensity, 
+                 round(CU_avg_length[2], CU_api_mean), 1), each= project_years)
 
 Z <- c(so_migration_dates_z, so_catch_intensity_z, so_length_z, so_api_z, 
        PI_migration_dates_z, pi_catch_intensity_z, PI_length_z, PI_api_z, 
        CU_migration_dates_z, cu_catch_intensity_z, CU_length_z, CU_api_z) 
 
 n_species <- 3 # sockeye, pink, chum
+n_parameters <- 4 # migration timing, sealice, catch intensity, condition
 
 
-#
-heatmap_data <- tibble(year = rep(c(2015:current_year), n_species * project_years),
+#TODO: figure out why there's only 60 of mean and sd and Z
+heatmap_data <- tibble(year = rep(c(2015:current_year), n_species* n_parameters),
                        Estimate = mean, SD = SD, Z = Z)
                       
 heatmap_data <- rbind(heatmap_data, sst_anomaly_table) %>% 
@@ -1458,7 +1472,7 @@ vec2 <- rep(c("Sea-surface Temperature"), project_years)
 vec <- c(vec, vec2)
 heatmap_data$measure <- vec
 
-spp_vec <- rep(c("Sockeye", "Pink", "Chum"), each = 16)
+spp_vec <- rep(c("Sockeye", "Pink", "Chum"), each = project_years * n_parameters)
 vec3 <- rep(c("Northern Strait of Georgia"), project_years)
 spp_vec <- c(spp_vec, vec3)
 
