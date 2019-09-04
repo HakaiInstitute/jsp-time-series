@@ -155,12 +155,12 @@ lab_lice <-
   # lump all sexes and staged of adult caligus
   mutate(
     motile_caligus_lab = rowSums(
-      select_(., "cm_lab", "cpaf_lab", "caf_lab", "cgf_lab", "ucal_lab"),
+      select(., "cm_lab", "cpaf_lab", "caf_lab", "cgf_lab", "ucal_lab"),
       na.rm = T
     ),
     # lump all sexes and staged of adult leps
     motile_lep_lab = rowSums(
-      select_(
+      select(
         .,
         "lpam_lab",
         "lpaf_lab",
@@ -787,7 +787,7 @@ predict_annual_prop$species <- factor(predict_annual_prop$species) %>%
   fct_recode("Sockeye" = "SO", "Pink" = "PI", "Chum" = "CU")
 
 write_csv(predict_annual_prop, here::here("data", "predict_annual_prop.csv"))
-saveRDS(predict_annual_prop, here::here("data", "predict_annual_prop.csv"))
+saveRDS(predict_annual_prop, here::here("data", "predict_annual_prop.RDS"))
 
 # Create data table for real (not modelled), q1, q2, q3 migration timing stats
 peak_dates <- tidy_catch[rep(row.names(tidy_catch), tidy_catch$n), 1:6] %>%
@@ -824,23 +824,47 @@ write_csv(peak_dates, here("data","peak_dates.csv"))
 saveRDS(peak_dates, here::here("data", "peak_dates.RDS"))
 ```
 
-```{r Condition}
-#TODO: Update so length and weight data come from the JSP database not EIMS Data Portal
-#TODO: Filter lengths and weights to only fish from between May 1 and July 9
+```{r Lengths and Condition}
+
+
 fish_field_data_2019 <- gs_read(field_2019, ws = "fish_field_data")
  
 survey_seines_fish_2019 <- left_join(survey_seines_2019, fish_field_data_2019) %>% 
-  select(date, species, weight, fork_length) %>%
-  mutate(year = factor(year(date))) %>% 
+  select(survey_date = date, region, species, weight, fork_length) %>%
+  mutate(year = factor(year(survey_date))) %>% 
   drop_na()
 
-library('hakaiApi')
-library('tidyverse')
-library(lubridate)
+fish_data <- left_join(hakaisalmon::fish_field_data, hakaisalmon::fish_lab_data) %>%
+  # combine both fork length measurements
+  mutate(
+    fork_length_lab = as.numeric(fork_length),
+    fork_length_field = as.numeric(fork_length_field),
+    fork_length = coalesce(fork_length_lab, fork_length_field)
+  )
+
+length_histo <- left_join(survey_seines, fish_data) %>%
+  select(survey_date, region, species, fork_length) %>%
+  drop_na(fork_length) %>%
+  mutate(year = year(survey_date)) %>%
+  # Remove incidtentaly sampled species
+  filter(species != "CK", species != "CO", species != "HE") %>%
+  mutate(year = as.factor(year)) %>% 
+  bind_rows(survey_seines_fish_2019) %>% 
+  select(-weight)
+
+saveRDS(length_histo, here::here("data", "length_histo.RDS"))
+write_csv(length_histo, here::here("data", "length_histo.csv"))
+
+#TODO: Update so length and weight data come from the JSP database not EIMS Data Portal
+#TODO: Filter lengths and weights to only fish from between May 1 and July 9
 
 # Run this line independently before the rest of the code to get the API authentication
 client <- hakaiApi::Client$new() # Follow stdout prompts to get an API token
 
+# Change date column title so I can match up columns
+survey_seines_fish_2019 <- survey_seines_fish_2019 %>% 
+  rename(date = survey_date) %>% 
+  select(-region)
 # Make a data request for fish data
 endpoint <- sprintf("%s/%s", client$api_root, "eims/views/output/jsp_fish?limit=-1")
 fish_cond <- client$get(endpoint) %>% 
@@ -1248,26 +1272,6 @@ CU_peak_dates <- CU_peak_dates %>%
   mutate(z_score = (median - CU_mean_of_median_date) / CU_sd_of_median_date)
 
 CU_migration_dates_z <- CU_peak_dates$z_score
-
-
-fish_data <- left_join(hakaisalmon::fish_field_data, hakaisalmon::fish_lab_data) %>%
-  # combine both fork length measurements
-  mutate(
-    fork_length_lab = as.numeric(fork_length),
-    fork_length_field = as.numeric(fork_length_field),
-    fork_length = coalesce(fork_length_lab, fork_length_field)
-  )
-
-length_histo <- left_join(survey_seines, fish_data)  %>%
-  select(survey_date, region, species, fork_length) %>%
-  drop_na(fork_length) %>%
-  mutate(year = year(survey_date)) %>%
-  # Remove incidtentaly sampled species
-  filter(species != "CK", species != "CO", species != "HE") %>%
-  mutate(year = as.factor(year))
-
-saveRDS(length_histo, here::here("data", "length_histo.RDS"))
-write_csv(length_histo, here::here("data", "length_histo.csv"))
 
 # Length z-scores
 

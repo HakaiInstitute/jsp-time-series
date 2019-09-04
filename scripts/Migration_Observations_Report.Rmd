@@ -346,7 +346,7 @@ cols <- c("#4575b4",
 heatmap_data$measure <- heatmap_data$measure %>%
     fct_recode("Fork Lengths" = "Length", "Sea-lice Abundance" = "Sea lice Abundance", "Ocean Temperature" = "Sea-surface Temperature")  %>% 
   fct_relevel("Migration Timing", "Catch Intensity", "Fork Lengths", "Sea-lice Abundance", "Ocean Temperature")
-
+#TODO: make it so the legend show 5 points of size
 ggplot(heatmap_data, aes(year, spp, colour = Z)) +
   geom_point(size = abs(10 * heatmap_data$Z), alpha = 0.1) +
   geom_point(aes(size = abs(10 * Z)), show.legend = F) +
@@ -356,12 +356,12 @@ ggplot(heatmap_data, aes(year, spp, colour = Z)) +
   scale_colour_gradientn(colours = cols) +
   ggsidekick::theme_sleek(base_size = 19) +
   theme(legend.position = "bottom") +
-  guides(color = guide_legend(override.aes = list(size = c(10, 6, 3, 6, 10), alpha = 1)), name = "Z score") +
+  guides(color = guide_legend(override.aes = list(size = c(10, 3, 10), alpha = 1)), name = "Z score") +
   labs(color = "Z Score") +
   scale_y_discrete(expand = expand_scale(mult = c(.75, .75))) +
   scale_x_continuous(expand = expand_scale(mult = c(.1, .1)), minor_breaks = 0) +
   labs(title = "Juvenile Salmon Migration Observations",
-    subtitle = "Migration parameter variability 2015-2018") +
+    subtitle = "Migration parameter variability 2015-2019") +
   #theme(panel.grid.major.y= element_line("grey")) +
   facet_wrap(. ~ measure, ncol = 1, scales = "free") 
 
