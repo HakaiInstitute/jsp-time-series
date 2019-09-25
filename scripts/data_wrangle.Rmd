@@ -985,7 +985,7 @@ ctd_all <- rbind(qu39_all, qu29_all, js2_12_all) %>%
     yday = yday(start_dt),
     week = week(start_dt)
   ) %>%
-  filter(depth <= 30) %>%
+  filter(yday > 32, yday < 213, depth <= 30) %>%
   select(
     year,
     date,
