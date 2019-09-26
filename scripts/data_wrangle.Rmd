@@ -159,12 +159,12 @@ fish_and_sealice_field_data_2019 <- left_join(survey_seines_fish_2019, sealice_f
 
 
 #### end 2019 update section and import past years' data from the data package
-sealice_field <- read_csv("../../jsp-data-packages/data/sealice_field.csv")
+sealice_field <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sealice_field.csv")
 
 # To get all lab motiles, you need to join the results from the lab_motile and lab_finescale tables.
 # Stages in lab_finescale need to be summed so that they're at the same level of precision as lab_motiles
-sealice_lab_mot <- read_csv("../../jsp-data-packages/data/sealice_lab_mot.csv")
-sealice_lab_fs_mot <- read_csv("../../jsp-data-packages/data/sealice_lab_fs.csv") %>% 
+sealice_lab_mot <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sealice_lab_mot.csv")
+sealice_lab_fs_mot <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sealice_lab_fs.csv") %>% 
   mutate(lpam_lab = lep_pa_m_1 + lep_pa_m_2,
          lpaf_lab = lep_pa_f_1 + lep_pa_f_2,
          cm_lab = cal_pa_m + cal_a_m) %>% 
@@ -179,12 +179,12 @@ sealice_lab_fs_mot <- read_csv("../../jsp-data-packages/data/sealice_lab_fs.csv"
          laf_lab = lep_a_f,
          lam_lab = lep_a_m,
          lgf_lab = lep_grav_f,
-         ulep_lab = lep_pa_unid) %>% 
+         ulep_lab = lep_pa_unid)
 
 sealice_lab_motiles <- bind_rows(sealice_lab_mot, sealice_lab_fs_mot)
 
 
-fish_field_data <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/fish_field_data.csv")
+fish_field_data <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/fish_field_data.csv", guess_max = 10000)
 
 lab_lice <-
   inner_join(survey_seines, fish_field_data, by = "seine_id") %>%
