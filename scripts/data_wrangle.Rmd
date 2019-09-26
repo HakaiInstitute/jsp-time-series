@@ -67,7 +67,7 @@ rm(survey_data)
 rm(seine_data)
 
 # Import data from 2015-2018
-survey_seines_2015_2018 <- left_join(read_csv("../../jsp-data-packages/data/survey_data.csv"), read_csv("../../jsp-data-packages/data/seine_data.csv")) %>% 
+survey_seines_2015_2018 <- left_join(read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/survey_data.csv"), read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/seine_data.csv")) %>% 
   left_join(read_csv("../../jsp-data-packages/data/sites.csv"))
 
 survey_seines_2015_2018 <- survey_seines_2015_2018 %>% 
