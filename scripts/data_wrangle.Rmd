@@ -184,7 +184,7 @@ sealice_lab_fs_mot <- read_csv("../../jsp-data-packages/data/sealice_lab_fs.csv"
 sealice_lab_motiles <- bind_rows(sealice_lab_mot, sealice_lab_fs_mot)
 
 
-fish_field_data <- read_csv("../../jsp-data-packages/data/fish_field_data.csv", guess_max = 10000)
+fish_field_data <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/fish_field_data.csv")
 
 lab_lice <-
   inner_join(survey_seines, fish_field_data, by = "seine_id") %>%
