@@ -454,6 +454,8 @@ ggplot(catch_intensity, aes(x = factor(year), y = mean_catch, fill = species)) +
   ggtitle("Species Abundance Proxy")
 
 ggsave(here("figs", "catch_intesity.png"))
+
+
 ```
 
 ```{r proportion-plot, out.width="90%", fig.cap="The annual proportion of fish captured in the Discovery Islands and Johnstone Strait combined."}
@@ -472,6 +474,177 @@ proportion$species <- proportion$species %>%
       ggtitle("Species Proportions")
 
 ggsave(here("figs", "proportions.png"))
+```
+
+```{r sara-fun}
+#graph 5 for temporal analysis of co-migration/ propr. species 
+sara_prop <- survey_seines %>%  select(
+  survey_date,
+  seine_id,
+  region,
+  Sockeye,
+  Pink,
+  Chum)
+
+sara_prop <- sara_prop %>% mutate(total = Sockeye + Pink + Chum)
+sara_prop_filter <- sara_prop %>% mutate(proportion_pink = Pink / total,
+                                  proportion_chum = Chum / total,
+                                  proportion_sockeye = Sockeye / total) %>% 
+  filter( Sockeye > 0)
+
+# create week column
+sara_prop_filter <- sara_prop_filter %>% mutate(week = round_date(sara_prop_filter$survey_date, unit = "week"))
+
+#tidying the data with gather ....
+sara_tidy_prop <- sara_prop_filter %>% gather(
+`proportion_sockeye`,
+`proportion_pink`,
+`proportion_chum`,
+key = "species",
+value = "n")
+
+# mean proportion
+sara_tidy_prop <- sara_tidy_prop %>% select(week, species, n) %>% group_by(week,species) %>% summarise( prop = mean(n))
+# need week and year
+sara_tidy_prop <- sara_tidy_prop %>% mutate(numbreweek = week(week),
+                                            year = year(week)) 
+sara_tidy_prop_nona <- sara_tidy_prop %>% drop_na() 
+
+# graph 5 : average proportion of species
+ggplot(sara_tidy_prop_nona, aes (x = numbreweek, 
+                                 y = prop, 
+                                 color = species)) + 
+  facet_grid(rows = "year") + 
+  geom_line(alpha = 0.6) + 
+  geom_point(size = 0.5, alpha = 0.6) + 
+  scale_x_continuous(breaks = c(20, 22, 24, 26), 
+                     labels = c("April 15", "May 1", "May 15", "June 1"), 
+                     limits = c(20,27)) + 
+  xlab("Date") + 
+  ylab("Proportion") + 
+  labs( title = "Co-migration: Average Proportion of Species Caught with Sockeye") + 
+  scale_color_manual( name = "Species", 
+                      values = c("#346257", "#6699c5","#aa1f25"), 
+                      breaks = c("proportion_chum", "proportion_pink", "proportion_sockeye"),
+                      labels = c("Chum", "Pink", "Sockeye")) +
+  ggsidekick::theme_sleek()
+
+ggsave(here("figs", "sara_avrprop.png"), width = 8, height = 6)
+
+#Graph 6 : fork length
+#missing 2019 data ? can't find length_histo in data_wrangle maybe that's why not updated?
+
+length_avr <- length_histo %>% group_by (species) %>% summarise( avr_size = mean(fork_length))
+
+ggplot(length_histo, aes( x = year, 
+                         y = fork_length, 
+                         color = species)) + 
+  geom_violin( aes(group = cut_width(year, 1)), 
+               scale = "width", 
+               trim = FALSE, 
+               alpha = 0.8 ) + 
+  facet_grid(rows = vars(species)) + 
+  geom_boxplot(aes(group= cut_width(year,1)), 
+               width = 0.1) + 
+  geom_hline(data = length_avr, 
+             aes(yintercept= avr_size), 
+             linetype="dashed", 
+             color = "grey", 
+             size = 0.5) + 
+  ylab("Fork Length (mm)") + 
+  xlab("Year") + 
+  scale_color_manual( values = c("#346257", "#6699c5","#aa1f25"), 
+                      breaks = c("CU", "PI", "SO"), 
+                      labels = c("Chum", "Pink", "Sockeye")) +
+  labs( title = "Fork length Distributions") +
+  ggsidekick::theme_sleek()
+
+ggsave(here("figs", "sara_length_dist.png"), width = 8, height = 6)
+
+#Graph 7 : Lenght Weight Relationships
+#no coho in 2019 + 6658 NA
+ggplot(data = fish_cond, aes (x = fork_length, y = weight)) + 
+  stat_density_2d( aes( fill = ..level..), geom = "polygon", color = "grey", size = 0.2) + facet_wrap(~species) + 
+  geom_point(data = current_fish_cond, alpha = .4, size = 0.8) + 
+  scale_fill_distiller(palette= "PuBuGn", direction = 1) + 
+  ggsidekick::theme_sleek(base_size = 14) + 
+  ylab('Weight (g)') + 
+  xlab('Length (mm)') + 
+  labs(title = "Length Weight Relationships")
+
+ggsave(here("figs", "Sara_lengthweight.png"), width = 8, height = 6)
+
+#for fun graph 4 ... showing peak catch intensity 
+sara_catch_tidy <- sara_prop_filter %>% gather('Sockeye', 'Chum', 'Pink', key = "species", value = "n") %>% select(week, species, n, region) %>% mutate(numberweek = week(week)) 
+
+sara_catch_tidy <- sara_catch_tidy %>% group_by(week,species, region) %>% summarise( catch = (mean(n)))
+
+sara_catch_tidy <- sara_catch_tidy %>% select(week, species, catch, region) %>% 
+  mutate(numberweek = week(week),
+           year =year(week))
+
+sara_catch_tidy_nona <- sara_catch_tidy %>% drop_na()
+
+# trying to get zero for sockeye showing on the graph
+sara_prop_zero <- sara_prop %>% filter( Sockeye == 0)
+sara_prop_zero <- sara_prop_zero %>% mutate(week = round_date(sara_prop_zero$survey_date, unit = "week"))
+sara_zero_tidy <- sara_prop_zero %>% gather('Sockeye', key = "species", value = "n") %>% select(week, species, n, region) %>% mutate(numberweek = week(week))
+
+sara_zero_tidy <- sara_zero_tidy %>% group_by(week, region, species ) %>% summarise( catch = mean(n))
+
+#truing to get zero again...
+tableau_index <- sara_prop %>% gather('Sockeye', 'Chum', 'Pink', key = "species", value = "n") %>% 
+  select( survey_date, region, species, n)
+catch_index <- tableau_index %>% distinct(survey_date, region, species, .keep_all = TRUE ) %>% 
+  drop_na()
+catch_species <- sara_prop_filter %>% gather('Sockeye', 'Chum', 'Pink', key = "species", value = "n")
+catch_species <- catch_species %>% filter( !species %in% 'Sockeye') %>% select(survey_date, region, species)
+
+
+#graph for peak catch intensity shown
+ggplot(sara_catch_tidy_nona, aes(x = numberweek, 
+                                 y = catch, 
+                                 color = species)) + 
+  geom_line(alpha = 0.7) + 
+  facet_grid(rows = vars(year), 
+             cols = vars(region)) + 
+  scale_x_continuous(breaks = c(20, 22, 24, 26), 
+                     labels = c("April 15", "May 1", "May 15", "June 1"), 
+                     limits = c(20,27)) + xlab("Date") + 
+  ylab("Catch Intensity") + 
+  labs( title = "Species Abundance Proxy When Sockeye Are Caught ") + 
+  scale_color_manual( name = "Species", 
+                      values = c("#346257", "#6699c5","#aa1f25"), 
+                      breaks = c("Chum", "Pink", "Sockeye"),labels = c("Chum", "Pink", "Sockeye")) +
+  geom_point(size = 0.5, alpha = 0.6) + 
+  ggsidekick::theme_sleek()
+
+ggsave(here("figs", "sara_catch_intensity.png"), width = 8, height = 6)
+
+#graph peak catch intensity by species/ year in colors:
+#too busyyyy iiiiiiih
+sara_catch_tidy_nona$yeardiscrete <- as.factor(sara_catch_tidy_nona$year)
+ggplot(sara_catch_tidy_nona, aes(x = numberweek, 
+                                 y = catch)) + 
+    geom_line(alpha = 0.7, aes(color = yeardiscrete)) + 
+    facet_grid(rows = vars(species), 
+               cols = vars(region)) + 
+    scale_x_continuous(breaks = c(20, 22, 24, 26), 
+                       labels = c("April 15", "May 1", "May 15", "June 1"), 
+                       limits = c(20,27)) + xlab("Date") + 
+    ylab("Catch Intensity") + 
+    labs( title = "Species Abundance Proxy When Sockeye Are Caught ") +
+    geom_point(size = 0.5, alpha = 0.6) + 
+    ggsidekick::theme_sleek()
+
+# how to compare/ show peak abundance and lower number rest of season
+#with DI/JS separated. not really successfulll
+ggplot(sara_catch_tidy_nona, aes(x = numberweek, y = species, color = catch)) + geom_point() + facet_grid(rows = vars(year), cols = vars(region))
+
+sara_catch_max %>% mutate( color_scale = catch / catch_max)
+sara_catch_max <- sara_catch_max %>% mutate( color_scale = catch / catch_max)
+ggplot(sara_catch_max, aes(x = numberweek, y = species, size = catch, color = color_scale)) + geom_point() + facet_grid(rows = vars(year), cols = vars(region))
+
 ```
 
 ```{r length-plot, out.width="90%", fig.cap="Distributions of juvenile salmon fork lengths for each year in the Discovery Islands and Johnstone Strait. Note that these distributions contain multiple age classes."}
@@ -493,6 +666,7 @@ ggplot(length_histo, aes(fork_length, y = fct_rev(factor(year)), fill = species)
   ggtitle("Fork Length Frequency Distributions")
 
 ggsave(here("figs", "lengths.png"), width = 8, height = 6)
+
 ```
 
 
