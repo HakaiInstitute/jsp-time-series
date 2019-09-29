@@ -539,10 +539,9 @@ length_avr <- length_histo %>% group_by (species) %>% summarise( avr_size = mean
 ggplot(length_histo, aes( x = year, 
                          y = fork_length, 
                          color = species)) + 
-  geom_violin( aes(group = cut_width(year, 1)), 
+  geom_violin( alpha = 0.5, aes(group = cut_width(year, 1)), 
                scale = "width", 
-               trim = FALSE, 
-               alpha = 0.8 ) + 
+               trim = FALSE ) + 
   facet_grid(rows = vars(species)) + 
   geom_boxplot(aes(group= cut_width(year,1)), 
                width = 0.1) + 
@@ -565,7 +564,7 @@ ggsave(here("figs", "sara_length_dist.png"), width = 8, height = 6)
 #no coho in 2019 + 6658 NA
 ggplot(data = fish_cond, aes (x = fork_length, y = weight)) + 
   stat_density_2d( aes( fill = ..level..), geom = "polygon", color = "grey", size = 0.2) + facet_wrap(~species) + 
-  geom_point(data = current_fish_cond, alpha = .4, size = 0.8) + 
+  geom_point(data = current_fish_cond, alpha = .3, size = 0.7) + 
   scale_fill_distiller(palette= "PuBuGn", direction = 1) + 
   ggsidekick::theme_sleek(base_size = 14) + 
   ylab('Weight (g)') + 
@@ -618,8 +617,7 @@ ggplot(sara_catch_tidy_nona, aes(x = numberweek,
                       breaks = c("Chum", "Pink", "Sockeye"),labels = c("Chum", "Pink", "Sockeye")) +
   geom_point(size = 0.5, alpha = 0.6) + 
   ggsidekick::theme_sleek()
-
-ggsave(here("figs", "sara_catch_intensity.png"), width = 8, height = 6)
+ggsave(here("figs","sara_catch_intensity.png"), width = 8, height = 6)
 
 #graph peak catch intensity by species/ year in colors:
 #too busyyyy iiiiiiih
