@@ -16,6 +16,7 @@ library(lubridate)
 library(knitr)
 library(here)
 library(car)
+library(hakaisalmon)
 # This same data warngling file should be used for the pdf report as well as the shiny app
 f <- function(x) {
   format(x + as.Date("2018-01-01") -1, format = "%B %d")
