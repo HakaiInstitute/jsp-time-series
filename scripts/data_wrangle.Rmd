@@ -11,7 +11,6 @@ A shiny app of these same data can be found [here](https://hecate.hakai.org/shin
 
 
 ```{r setup}
-library(hakaisalmon) #v0.2.1
 library(tidyverse)
 library(lubridate)
 library(knitr)
@@ -51,25 +50,30 @@ survey_data$sampling_week <- recode_factor(survey_data$sampling_week,
 
 seine_data <- gs_read(field_2019, ws = "seine_data")
 
-survey_seines_2019 <- full_join(seine_data, survey_data) %>% 
+survey_seines_2019 <- full_join(seine_data, survey_data, by = "survey_id") %>% 
   mutate(year = year(survey_date)) %>% 
   drop_na(survey_id) %>% 
-  mutate(yday = yday(survey_date)) 
+  mutate(yday = yday(survey_date)) %>% 
+  select(-contains("time")) %>% 
+  # remove ad-hoc collections from migration timing calcs & sampling events forom normal sampling period (May 1 - July 9)
+  filter(
+    survey_type == "standard",
+    collection_protocol == "SEMSP",
+    set_type == "targeted",
+    yday < 190
+    )
 
 rm(survey_data)
 rm(seine_data)
 
 # Import data from 2015-2018
-survey_seines_2015_2018 <- hakaisalmon::survey_seines
-
+survey_seines_2015_2018 <- left_join(read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/survey_data.csv"), read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/seine_data.csv")) %>% 
+  left_join(read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sites.csv"))
 
 survey_seines_2015_2018 <- survey_seines_2015_2018 %>% 
-  # remove ad-hoc collections from migration timing calcs
-  filter(survey_type == "standard",
-         collection_protocol == "SEMSP",
-         set_type == "targeted") %>%
+# The way time is stored in the data package files is in a different format from the raw data
+  select(-contains("time")) %>% 
   # only include consistently sampled sites with similar catchabilities
-  # TODO: Update these sites to inlcude 2019 sites
   filter(
     site_id %in% c(
       "D07",
@@ -79,6 +83,7 @@ survey_seines_2015_2018 <- survey_seines_2015_2018 %>%
       "D10",
       "D08",
       "D34",
+      "D35",
       "D20",
       "J03",
       "J02",
@@ -89,13 +94,14 @@ survey_seines_2015_2018 <- survey_seines_2015_2018 %>%
   mutate(year = year(survey_date),
          yday = yday(survey_date)
   ) %>% 
-  # filter out sampling events from beyond the normal sampling period. (May 1 - July 9)
-  filter(yday < 190) %>% 
-  # remove columns that were not used in 2019
-  select(-time_searching)
+  # remove ad-hoc collections from migration timing calcs & sampling events forom normal sampling period (May 1 - July 9)
+  filter(survey_type == "standard",
+         collection_protocol == "SEMSP",
+         set_type == "targeted",
+         yday < 190)
 
-# Join 2015-2018 wirh 2019 data
-survey_seines <- full_join(survey_seines_2019, survey_seines_2015_2018)
+# Join 2015-2018 with 2019 data
+survey_seines <- bind_rows(survey_seines_2019, survey_seines_2015_2018)
 
 survey_seines$sampling_week <- recode_factor(survey_seines$sampling_week, 
                                            `18` = "May 5",
@@ -113,25 +119,34 @@ survey_seines$sampling_week <- recode_factor(survey_seines$sampling_week,
 write_csv(survey_seines, here::here("data", "survey_seines.csv"))
 saveRDS(survey_seines,  here::here("data", "survey_seines.RDS"))
 
-rm(survey_seines_2015_2018)
 
 current_year <- max(survey_seines$year, na.rm = T)
 project_years <- current_year - 2015 + 1
 study_range <- paste(2015, "-", current_year)
+
+## THIS SHOULD ALL BE FINE
 ```
 
 ```{r sealice}
 # Bring in 2019 raw data from google sheets to join
 fish_field_data_2019 <- gs_read(field_2019, ws = "fish_field_data")
-survey_seines_fish_2019 <- left_join(survey_seines_2019, fish_field_data_2019) %>% 
+survey_seines_fish_2019 <- left_join(survey_seines_2019, fish_field_data_2019, by = "seine_id") %>% 
   drop_na(ufn)
 
-sealice_field_data_2019 <- gs_read(field_2019, 
-                                       ws = "sealice_field_data")
+# QC that only the proper fish are filtered out by the seine/survey restrictions in the setup chunk
+# s <- fish_field_data_2019 %>% 
+#   left_join(seine_data, by = "seine_id") %>%
+#   left_join(survey_data, by = c("survey_id.x" = "survey_id")) %>% 
+#   filter(!ufn %in% survey_seines_fish_2019$ufn) %>% 
+#   group_by(seine_id, survey_date, site_id, set_type, survey_type, collection_protocol) %>% 
+#   summarize(count=n()) %>% 
+#   mutate(yday = yday(survey_date))
 
-fish_and_sealice_field_data_2019 <- left_join(survey_seines_fish_2019, sealice_field_data_2019) %>%
-  drop_na(ufn) %>% 
-  mutate(all_lice = cal_mot + cpaf + caf + cgf + lpam, lpaf, lam, laf, lgf,
+sealice_field_data_2019 <- gs_read(field_2019, ws = "sealice_field_data")
+
+fish_and_sealice_field_data_2019 <- left_join(survey_seines_fish_2019, sealice_field_data_2019, by = "ufn") %>%
+  filter(field_lice_id_protocol != "NA") %>%
+  mutate(all_lice = cal_mot + cpaf + caf + cgf + lpam + lpaf + lam + laf + lgf,
          motile_caligus = cal_mot + cpaf + caf + cgf,
          motile_lep = lpam + lpaf + lam + laf + lgf) %>% 
   select(ufn, survey_date, site_id, region, species, year, all_lice, motile_caligus, motile_lep) %>% 
@@ -140,25 +155,48 @@ fish_and_sealice_field_data_2019 <- left_join(survey_seines_fish_2019, sealice_f
          `all_lice`,
          key = louse_species,
          value = n_lice) %>% 
-  select(ufn, survey_date, site_id, region, species, louse_species, n_lice, year) %>% 
-  # I think this correctly creates zeros where NAs are created by default
-  drop_na(n_lice)
+  select(ufn, survey_date, site_id, region, species, louse_species, n_lice, year)
 
-#### end 2019 update section
-sealice_lab_motiles <- hakaisalmon::sealice_lab_motiles
-sealice_field <- hakaisalmon::sealice_field
+
+#### end 2019 update section and import past years' data from the data package
+sealice_field <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sealice_field.csv")
+
+# To get all lab motiles, you need to join the results from the lab_motile and lab_finescale tables.
+# Stages in lab_finescale need to be summed so that they're at the same level of precision as lab_motiles
+sealice_lab_mot <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sealice_lab_mot.csv")
+sealice_lab_fs_mot <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sealice_lab_fs.csv") %>% 
+  mutate(lpam_lab = lep_pa_m_1 + lep_pa_m_2,
+         lpaf_lab = lep_pa_f_1 + lep_pa_f_2,
+         cm_lab = cal_pa_m + cal_a_m) %>% 
+  select(ufn,
+         cm_lab,
+         cpaf_lab = cal_pa_f,
+         caf_lab = cal_a_f,
+         cgf_lab = cal_grav_f,
+         ucal_lab = cal_mot_unid,
+         lpam_lab,
+         lpaf_lab,
+         laf_lab = lep_a_f,
+         lam_lab = lep_a_m,
+         lgf_lab = lep_grav_f,
+         ulep_lab = lep_pa_unid)
+
+sealice_lab_motiles <- bind_rows(sealice_lab_mot, sealice_lab_fs_mot)
+
+
+fish_field_data <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/fish_field_data.csv", guess_max = 10000)
 
 lab_lice <-
-  left_join(survey_seines, hakaisalmon::fish_field_data) %>%
-  left_join(sealice_lab_motiles) %>%
-  drop_na(cm_lab) %>%
-  # lump all sexes and staged of adult caligus
+  inner_join(survey_seines, fish_field_data, by = "seine_id") %>%
+  inner_join(sealice_lab_motiles, by = "ufn") %>%
+  drop_na(cm_lab) %>% 
+  # lump all sexes and stages of adult caligus
   mutate(
     motile_caligus_lab = rowSums(
       select(., "cm_lab", "cpaf_lab", "caf_lab", "cgf_lab", "ucal_lab"),
       na.rm = T
     ),
-    # lump all sexes and staged of adult leps
+    # lump all sexes and stages of adult leps
     motile_lep_lab = rowSums(
       select(
         .,
@@ -184,14 +222,12 @@ lab_lice <-
   )
 
 field_lice <-
-  left_join(survey_seines, hakaisalmon::fish_field_data) %>%
+  left_join(survey_seines, fish_field_data) %>%
   left_join(sealice_field) %>%
-  # here I drop NAs from cm_field so that they wont be converted to zeros when rowSums na.rm = T coerces them to zero
-  # the NAs will be created when I subsequently left_join
-  drop_na(cm_field) %>%
+  drop_na(cal_mot_field) %>% 
   mutate(
-    motile_caligus_field = rowSums(select_(
-      ., "cm_field", "cpaf_field", "caf_field", "cgf_field"
+    motile_caligus_field = rowSums(select(
+      ., "cal_mot_field", "cgf_field"
     )),
     motile_lep_field = rowSums(
       select(
@@ -249,6 +285,7 @@ sealice_time_series <- motile_lice %>%
       "D10",
       "D08",
       "D34",
+      "D35",
       "D20",
       "J03",
       "J02",
