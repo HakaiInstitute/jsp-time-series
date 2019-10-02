@@ -1088,8 +1088,7 @@ sim_temp_data_qu39$predicted_mean_temp <-
   predict(temp.lo_qu39, sim_temp_data_qu39, SE = T)
 
 
-# Create a linear interpolation of points that have zero difference between
-# loess model and 'observed data' so that an area plot will look right
+# Create a linear interpolation of points that have zero difference between loess model and 'observed data' so that an area plot will look right
 # manually identify intersections and create values that fall on the line so that colour of plot will change above and below the trend line.
 # This code will have to be re-written manually to interpolate the mid points of when current year points cross over the trendline
 # See https://stackoverflow.com/questions/27135962/how-to-fill-geom-polygon-with-different-colors-above-and-below-y-0
@@ -1146,42 +1145,23 @@ qu29_average <- ctd_all %>%
 qu29_this_year <- ctd_post_time_series %>%
   filter(station == "QU29")
 
-temp.lo_qu29 <- loess(mean_temp ~ yday, qu29_average, span = 0.35)
+temp.lo_qu29 <- 
+  loess(mean_temp ~ yday, qu29_average, SE = T, span = 0.35)
 
-#create table for predicitions from loess function
+#create table for predictions from loess function
 sim_temp_data_qu29 <-
   tibble(yday = seq(min(qu29_average$yday), max(qu29_average$yday), 0.1))
 #Predict temp in 0.1 day increments to provide smooth points to join
 sim_temp_data_qu29$predicted_mean_temp <-
   predict(temp.lo_qu29, sim_temp_data_qu29, SE = T)
 
-# Create a linear interpolation of points that have zero difference between
-# loess model and 'observed data' so that an area plot will look right
+# Create a linear interpolation of points that have zero difference between loess model and 'observed data' so that an area plot will look right
 # manually identify intersections and create values that fall on the line
 qu29_temp_anomaly_data <-
-  left_join(sim_temp_data_qu29, qu29_this_year) %>%
-  mutate(diff = if_else(mean_temp > predicted_mean_temp, "pos", "neg")) %>%
-  drop_na(diff) %>%
-  add_row(
-    station = "QU29",
-    yday = (51 + 36) / 2,
-    predicted_mean_temp = predict(temp.lo_qu29, (51 + 36) / 2),
-    mean_temp = predict(temp.lo_qu29, (51 + 36) / 2)
-  ) %>%
-  add_row(
-    station = "QU29",
-    yday = (157 + 136) / 2,
-    predicted_mean_temp = predict(temp.lo_qu29, (157 + 136) / 2),
-    mean_temp = predict(temp.lo_qu29, (157 + 136) / 2)
-  ) %>%
-  add_row(
-    station = "QU29",
-    yday = (157 + 201) / 2,
-    predicted_mean_temp = predict(temp.lo_qu29, (157 + 201) / 2),
-    mean_temp = predict(temp.lo_qu29, (157 + 201) / 2)
-  )
-# Create min and max for any given day of the time series
+  right_join(sim_temp_data_qu29, qu29_this_year) %>%
+  mutate(diff = if_else(mean_temp > predicted_mean_temp, "pos", "neg"))
 
+# Create min and max for any given day of the time series
 qu29_min_max <- qu29_all %>%
   filter(depth <= 30) %>%
   group_by(year, yday) %>%
@@ -1201,12 +1181,9 @@ js2_12_this_year <- ctd_post_time_series %>%
   filter(station == "js2_12")
 
 temp.lo_js2_12 <-
-  loess(mean_temp ~ yday,
-        js2_12_average,
-        SE = T,
-        span = 0.35)
+  loess(mean_temp ~ yday, js2_12_average, SE = T, span = 0.35)
 
-#create table for predicitions from loess function
+#create table for predictions from loess function
 sim_temp_data_js2_12 <-
   tibble(yday = seq(min(js2_12_average$yday), max(js2_12_average$yday), 0.1))
 #Predict temp in 0.1 day increments to provide smooth points to join
@@ -1214,13 +1191,29 @@ sim_temp_data_js2_12$predicted_mean_temp <-
   predict(temp.lo_js2_12, sim_temp_data_js2_12, SE = T)
 
 
-# Create a linear interpolation of points that have zero difference between
-# loess model and 'observed data' so that an area plot will look right
+# Create a linear interpolation of points that have zero difference between loess model and 'observed data' so that an area plot will look right
 # manually identify intersections and create values that fall on the line
 js2_12_temp_anomaly_data <-
-  left_join(sim_temp_data_js2_12, js2_12_this_year) %>%
+  right_join(sim_temp_data_js2_12, js2_12_this_year) %>%
   mutate(diff = if_else(mean_temp > predicted_mean_temp, "pos", "neg")) %>%
-  drop_na(diff)
+   add_row(
+    station = "js2_12",
+    yday = (130 + 135) / 2,
+    predicted_mean_temp = predict(temp.lo_qu39, (130 + 135) / 2),
+    mean_temp = predict(temp.lo_qu39, (130 + 135) / 2)
+  ) %>%
+    add_row(
+    station = "js2_12",
+    yday = (135 + 142) / 2,
+    predicted_mean_temp = predict(temp.lo_qu39, (135 + 142) / 2),
+    mean_temp = predict(temp.lo_qu39, (135 + 142) / 2)
+  ) %>%
+    add_row(
+    station = "js2_12",
+    yday = (194 + 195) / 2,
+    predicted_mean_temp = predict(temp.lo_qu39, (194 + 195) / 2),
+    mean_temp = predict(temp.lo_qu39, (194 + 195) / 2)
+  )
 
 # Create min and max for any given day of the time series
 js2_12_min_max <- js2_12_all %>%
