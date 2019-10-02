@@ -284,7 +284,7 @@ len_tt <- length_histo %>%
 
 ```{r sst stats}
 # SST z-score
-## I'm going to filter the time period down to May and Juen because that's the most relevant period that juvenile salmon are likely to be in the Strait of Georgia
+## I'm going to filter the time period down to May and June because that's the most relevant period that juvenile salmon are likely to be in the Strait of Georgia
 
 sst_annual_mean <- ctd_all %>%
   ungroup() %>%
@@ -299,17 +299,19 @@ sst_annual_mean <- ctd_all %>%
 
 sst_mean <- mean(sst_annual_mean$mean_temp)
 sst_sd <- sd(sst_annual_mean$mean_temp)
+sst_annual_mean$sst_z <- (sst_annual_mean$mean_temp - sst_mean) / sst_sd
 
-sst_z <- (sst_annual_mean$mean_temp - sst_mean) / sst_sd
-
-sst_time_series_stats <- ctd_all %>%
+sst_time_series <- ctd_all %>%
   ungroup() %>%
   mutate(date = as_date(date)) %>%
   mutate(month = month(date), year = year(date)) %>%
   filter(month >= 5 & month <= 6, station == "QU39") %>%
   select(year, mean_temp) 
 
-sst_current_year <- sst_time_series_stats %>% 
+sst_time_series_stats <- sst_time_series %>%
+  filter(year != current_year)
+
+sst_current_year <- sst_time_series %>% 
   filter(year == current_year)
 
 sst_stats_table <- broom::tidy(t.test(sst_current_year$mean_temp, sst_time_series_stats$mean_temp))
