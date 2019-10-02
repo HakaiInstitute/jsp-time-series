@@ -631,7 +631,7 @@ sealice_summary_table %>%
 ggsave(here("figs", "sealice_intensity.png"))
 ```
 
-```{r sst-plot, out.width="90%", fig.cap="Thirty-meter depth-integrated ocean temperatures at station QU39 in the northern Strait of Georgia is the solid black line which represents average temperatures from 2015–2017. Blue areas represent temperatures from 2018 that are below the 2015–2017 average and red areas represent above average temperatures. The shaded grey area is 1 SE of the loess regression. The black dots are the daily minimum and maximum temperatures observed over the study-period."}
+```{r sst-plot, out.width="90%", fig.cap="Thirty-meter depth-integrated ocean temperatures at station QU39 in the northern Strait of Georgia is the solid black line which represents average temperatures from 2015–2019. Blue areas represent temperatures from 2019 that are below the 2015–2019 average and red areas represent above average temperatures. The shaded grey area is 1 SE of the loess regression. The black dots are the minimum and maximum daily mean temperatures observed over the study-period."}
 
 temperature_anomaly_data <- temperature_anomaly_data %>% 
       filter(station == "QU39")
