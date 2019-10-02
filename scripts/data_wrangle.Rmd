@@ -1080,7 +1080,7 @@ qu39_this_year <- ctd_post_time_series %>%
 temp.lo_qu39 <-
   loess(mean_temp ~ yday, qu39_average, SE = T, span = 0.35)
 
-#create table for predicitions from loess function
+#create table for predictions from loess function
 sim_temp_data_qu39 <-
   tibble(yday = seq(min(qu39_average$yday), max(qu39_average$yday), 0.1))
 #Predict temp in 0.1 day increments to provide smooth points to join
@@ -1094,9 +1094,8 @@ sim_temp_data_qu39$predicted_mean_temp <-
 # This code will have to be re-written manually to interpolate the mid points of when current year points cross over the trendline
 # See https://stackoverflow.com/questions/27135962/how-to-fill-geom-polygon-with-different-colors-above-and-below-y-0
 qu39_temp_anomaly_data <-
-  left_join(sim_temp_data_qu39, qu39_this_year) %>%
+  right_join(sim_temp_data_qu39, qu39_this_year) %>%
   mutate(diff = if_else(mean_temp > predicted_mean_temp, "pos", "neg")) %>%
-  drop_na(diff) %>%
    add_row(
     station = "QU39",
     yday = (36 + 43) / 2,
@@ -1117,28 +1116,16 @@ qu39_temp_anomaly_data <-
   ) %>%
   add_row(
     station = "QU39",
-    yday = (155 + 149) / 2,
-    predicted_mean_temp = predict(temp.lo_qu39, (155 + 149) / 2),
-    mean_temp = predict(temp.lo_qu39, (155 + 149) / 2)
+    yday = (176 + 190) / 2,
+    predicted_mean_temp = predict(temp.lo_qu39, (176 + 190) / 2),
+    mean_temp = predict(temp.lo_qu39, (176 + 190) / 2)
   ) %>% 
   add_row(
     station = "QU39",
-    yday = (155 + 171) / 2,
-    predicted_mean_temp = predict(temp.lo_qu39, (155 + 171) / 2),
-    mean_temp = predict(temp.lo_qu39, (155 + 171) / 2)
-  ) %>% 
-  add_row(
-    station = "QU39",
-    yday = (176 + 184) / 2,
-    predicted_mean_temp = predict(temp.lo_qu39, (176 + 184) / 2),
-    mean_temp = predict(temp.lo_qu39, (176 + 184) / 2)
-  ) %>% 
-  add_row(
-    station = "QU39",
-    yday = (211 + 199) / 2,
-    predicted_mean_temp = predict(temp.lo_qu39, (211 + 199) / 2),
-    mean_temp = predict(temp.lo_qu39, (211 + 199) / 2)
-  )
+    yday = (205 + 211) / 2,
+    predicted_mean_temp = predict(temp.lo_qu39, (205 + 211) / 2),
+    mean_temp = predict(temp.lo_qu39, (205 + 211) / 2)
+  ) 
 
 # Create min and max for any given day of the time series
 qu39_min_max <- qu39_all %>%
