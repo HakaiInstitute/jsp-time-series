@@ -1448,12 +1448,12 @@ sst_annual_mean <- ctd_all %>%
 sst_mean <- mean(sst_annual_mean$mean_temp)  
 sst_sd <- sd(sst_annual_mean$mean_temp)
 
-sst_z <- (sst_annual_mean$mean_temp - sst_mean) / sst_sd
+sst_annual_mean$sst_z <- (sst_annual_mean$mean_temp - sst_mean) / sst_sd
 
 sst_anomaly_table <- tibble(year = c(2015:current_year),
                             Estimate = round(sst_annual_mean$mean_temp, 2),
                             SD = round(sst_annual_mean$sd_temp, 2),
-                            Z = sst_z)
+                            Z = round(sst_annual_mean$sst_z, 2))
 
 # Put all the z-scores together into a table
 
