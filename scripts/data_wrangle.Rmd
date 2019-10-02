@@ -1071,7 +1071,7 @@ ctd_post_time_series <- rbind(qu39_all, qu29_all, js2_12_all) %>%
 ## SST ANOMALY DATA
 ## QU39
 qu39_average <- ctd_all %>%
-  filter(station == "QU39", year(date) != current_year)
+  filter(station == "QU39")
 
 # Filter down to station of interest
 qu39_this_year <- ctd_post_time_series %>%
