@@ -17,23 +17,20 @@ library(knitr)
 library(here)
 library(car)
 library(hakaisalmon)
-# This same data warngling file should be used for the pdf report as well as the shiny app
+library(googledrive)
+# This same data wrangling file should be used for the pdf report as well as the shiny app
 f <- function(x) {
   format(x + as.Date("2018-01-01") -1, format = "%B %d")
 }
 
-# Currently 2019 field and lab data are not thoroughly QC'd and entered into our
-# database; In the meantime we'll use the raw data from googlesheets.
-# TODO: Replace all 2019 raw googlesheet data with QC'd JSP database data
-  
-# Add in 2019 field data from google sheet
-library(googlesheets)
-field_2019 <- gs_key("1cHgZszv--FlV207cwSpe9hFJipb7HhS4IW9vVrUNg8M",
-                     lookup = FALSE, visibility = "private")
+# Downloads and unpacks the .zip of JSP Data v.1.0.2 from the Hakai Metadata Catalogue, DOI http://dx.doi.org/10.21966/1.566666 
+drive_download(as_id("https://drive.google.com/open?id=1dSaGlM9Em6Lo9_jfL9qO7nnm8pdjMYNf"),
+               path = here("data", "v1.0.2.zip"),
+               overwrite = TRUE)
 
-survey_data <- gs_read(field_2019, ws = "survey_data") %>% 
-  drop_na(survey_id) %>% 
-  mutate(sampling_week = as.numeric((yday(survey_date) + 4) %/% 7)) 
+
+survey_data <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/survey_data.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE)) %>% 
+  mutate(sampling_week = as.numeric((yday(survey_date) + 4) %/% 7))
 
 survey_data$sampling_week <- recode_factor(survey_data$sampling_week, 
                                            `18` = "May 5",
@@ -49,33 +46,20 @@ survey_data$sampling_week <- recode_factor(survey_data$sampling_week,
                                            `28` = "July 13")
 
 
-seine_data <- gs_read(field_2019, ws = "seine_data")
+seine_data <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/seine_data.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE))
 
-survey_seines_2019 <- full_join(seine_data, survey_data, by = "survey_id") %>% 
+survey_seines <- full_join(seine_data, survey_data, by = "survey_id") %>% 
   mutate(year = year(survey_date)) %>% 
   drop_na(survey_id) %>% 
-  mutate(yday = yday(survey_date)) %>% 
+  mutate(yday = yday(survey_date),
+         year = year(survey_date)) %>% 
   select(-contains("time")) %>% 
   # remove ad-hoc collections from migration timing calcs & sampling events forom normal sampling period (May 1 - July 9)
   filter(
     survey_type == "standard",
     collection_protocol == "SEMSP",
     set_type == "targeted",
-    yday < 190
-    )
-
-rm(survey_data)
-rm(seine_data)
-
-# Import data from 2015-2018
-survey_seines_2015_2018 <- left_join(read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/survey_data.csv"), read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/seine_data.csv")) %>% 
-  left_join(read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sites.csv"))
-
-survey_seines_2015_2018 <- survey_seines_2015_2018 %>% 
-# The way time is stored in the data package files is in a different format from the raw data
-  select(-contains("time")) %>% 
-  # only include consistently sampled sites with similar catchabilities
-  filter(
+    yday < 190,
     site_id %in% c(
       "D07",
       "D09",
@@ -90,32 +74,8 @@ survey_seines_2015_2018 <- survey_seines_2015_2018 %>%
       "J02",
       "J09",
       "J11"
+      )
     )
-  ) %>%
-  mutate(year = year(survey_date),
-         yday = yday(survey_date)
-  ) %>% 
-  # remove ad-hoc collections from migration timing calcs & sampling events forom normal sampling period (May 1 - July 9)
-  filter(survey_type == "standard",
-         collection_protocol == "SEMSP",
-         set_type == "targeted",
-         yday < 190)
-
-# Join 2015-2018 with 2019 data
-survey_seines <- bind_rows(survey_seines_2019, survey_seines_2015_2018)
-
-survey_seines$sampling_week <- recode_factor(survey_seines$sampling_week, 
-                                           `18` = "May 5",
-                                           `19` = "May 12" ,
-                                           `20` = "May 19", 
-                                           `21` = "May 26",
-                                           `22` = "June 2",
-                                           `23` = "June 9", 
-                                           `24` = "June 16", 
-                                           `25` = "June 23",
-                                           `26` = "June 30", 
-                                           `27` = "July 6", 
-                                           `28` = "July 13")
 
 write_csv(survey_seines, here::here("data", "survey_seines.csv"))
 saveRDS(survey_seines,  here::here("data", "survey_seines.RDS"))
