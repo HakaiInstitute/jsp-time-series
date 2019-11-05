@@ -28,9 +28,16 @@ drive_download(as_id("https://drive.google.com/open?id=1dSaGlM9Em6Lo9_jfL9qO7nnm
                path = here("data", "v1.0.2.zip"),
                overwrite = TRUE)
 
+sites <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/sites.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE))
 
 survey_data <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/survey_data.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE)) %>% 
-  mutate(sampling_week = as.numeric((yday(survey_date) + 4) %/% 7))
+  mutate(sampling_week = as.numeric((yday(survey_date) + 4) %/% 7)) %>% 
+  left_join(select(sites,
+                   site_id,
+                   site_name,
+                   region,
+                   zone),
+            by = "site_id")
 
 survey_data$sampling_week <- recode_factor(survey_data$sampling_week, 
                                            `18` = "May 5",
@@ -89,27 +96,19 @@ study_range <- paste(2015, "-", current_year)
 ```
 
 ```{r sealice}
-# Bring in 2019 raw data from google sheets to join
-fish_field_data_2019 <- gs_read(field_2019, ws = "fish_field_data")
-survey_seines_fish_2019 <- left_join(survey_seines_2019, fish_field_data_2019, by = "seine_id") %>% 
+
+fish_field_data <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/fish_field_data.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE), guess_max = 20000)
+survey_seines_fish <- left_join(survey_seines, fish_field_data, by = "seine_id") %>% 
   drop_na(ufn)
 
-# QC that only the proper fish are filtered out by the seine/survey restrictions in the setup chunk
-# s <- fish_field_data_2019 %>% 
-#   left_join(seine_data, by = "seine_id") %>%
-#   left_join(survey_data, by = c("survey_id.x" = "survey_id")) %>% 
-#   filter(!ufn %in% survey_seines_fish_2019$ufn) %>% 
-#   group_by(seine_id, survey_date, site_id, set_type, survey_type, collection_protocol) %>% 
-#   summarize(count=n()) %>% 
-#   mutate(yday = yday(survey_date))
+sealice_field_data <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/sealice_field.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE))
 
-sealice_field_data_2019 <- gs_read(field_2019, ws = "sealice_field_data")
-
-fish_and_sealice_field_data_2019 <- left_join(survey_seines_fish_2019, sealice_field_data_2019, by = "ufn") %>%
-  filter(field_lice_id_protocol != "NA") %>%
-  mutate(all_lice = cal_mot + cpaf + caf + cgf + lpam + lpaf + lam + laf + lgf,
-         motile_caligus = cal_mot + cpaf + caf + cgf,
-         motile_lep = lpam + lpaf + lam + laf + lgf) %>% 
+# Summarize field counts of motile sea lice only
+fish_and_sealice_field_data <- left_join(survey_seines_fish, sealice_field_data, by = "ufn") %>%
+  filter(lice_id_protocol_field != "NA") %>%
+  mutate(all_lice = cal_mot_field + cgf_field + lpam_field + lpaf_field + lam_field + laf_field + lgf_field,
+         motile_caligus = cal_mot_field,
+         motile_lep = lpam_field + lpaf_field + lam_field + laf_field + lgf_field) %>% 
   select(ufn, survey_date, site_id, region, species, year, all_lice, motile_caligus, motile_lep) %>% 
   gather(`motile_caligus`,
          `motile_lep`,
@@ -119,13 +118,10 @@ fish_and_sealice_field_data_2019 <- left_join(survey_seines_fish_2019, sealice_f
   select(ufn, survey_date, site_id, region, species, louse_species, n_lice, year)
 
 
-#### end 2019 update section and import past years' data from the data package
-sealice_field <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sealice_field.csv")
-
 # To get all lab motiles, you need to join the results from the lab_motile and lab_finescale tables.
 # Stages in lab_finescale need to be summed so that they're at the same level of precision as lab_motiles
-sealice_lab_mot <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sealice_lab_mot.csv")
-sealice_lab_fs_mot <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sealice_lab_fs.csv") %>% 
+sealice_lab_mot <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/sealice_lab_mot.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE))
+sealice_lab_fs_mot <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/sealice_lab_fs.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE)) %>% 
   mutate(lpam_lab = lep_pa_m_1 + lep_pa_m_2,
          lpaf_lab = lep_pa_f_1 + lep_pa_f_2,
          cm_lab = cal_pa_m + cal_a_m) %>% 
@@ -144,8 +140,6 @@ sealice_lab_fs_mot <- read_csv("https://raw.githubusercontent.com/HakaiInstitute
 
 sealice_lab_motiles <- bind_rows(sealice_lab_mot, sealice_lab_fs_mot)
 
-
-fish_field_data <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/fish_field_data.csv", guess_max = 10000)
 
 lab_lice <-
   inner_join(survey_seines, fish_field_data, by = "seine_id") %>%
@@ -174,7 +168,6 @@ lab_lice <-
   select(
     ufn,
     site_id,
-    semsp_id,
     species,
     region,
     survey_date,
@@ -183,8 +176,8 @@ lab_lice <-
   )
 
 field_lice <-
-  left_join(survey_seines, fish_field_data) %>%
-  left_join(sealice_field) %>%
+  left_join(survey_seines, fish_field_data, by = "seine_id") %>%
+  left_join(sealice_field, by = "ufn") %>%
   drop_na(cal_mot_field) %>% 
   mutate(
     motile_caligus_field = rowSums(select(
@@ -205,7 +198,6 @@ field_lice <-
   select(
     ufn,
     site_id,
-    semsp_id,
     species,
     region,
     survey_date,
@@ -233,9 +225,7 @@ sealice_time_series <- motile_lice %>%
          `all_lice`,
          key = louse_species,
          value = n_lice) %>%
-  mutate(year = year(survey_date)
-  ) %>% 
-  bind_rows(fish_and_sealice_field_data_2019) %>% 
+  mutate(year = year(survey_date)) %>% 
   #TODO: Consider whether these are the appropriate sites
   filter(
     site_id %in% c(
@@ -259,6 +249,7 @@ sealice_time_series <- motile_lice %>%
 
 write_csv(sealice_time_series, here("data", "sealice_time_series.csv"))
 saveRDS(sealice_time_series,  here::here("data", "sealice_time_series.RDS"))
+
 
 abundance_df <- sealice_time_series %>% 
   group_by(year, region, louse_species, species) %>% 
