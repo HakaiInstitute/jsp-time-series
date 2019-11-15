@@ -5,7 +5,7 @@ date: "October 16, 2018"
 output: html_document
 ---
 
-This script is meant to pre-process the data required for publishing the Hakai Institute Juvenile Salmon Program Migration Observations Time Series. Most of the data that are read in this file are from the `hakaisalmon` R package which contains all the program data. The `hakaisalmon` r package is versioned so that any changes to data are kept track of. The `hakaisalmon` r package is a private repository, mainly because a number of graduate students are currently depending on this data to publish their theses, and out of respect for their projects the data will be requestable, not publically accesible, until students publish their research. Access can be requested in the meantime however and we will likely grant access. Please see the package website [here](https://hakaiinstitute.github.io/hakaisalmon/). A DOI citable version of the data in the R package can be formall requested [here](http://dx.doi.org/10.21966/1.566666).
+A DOI citable version of the data in the R package can be formall requested [here](http://dx.doi.org/10.21966/1.566666).
 
 A shiny app of these same data can be found [here](https://hecate.hakai.org/shiny/JSP/)
 
@@ -16,24 +16,28 @@ library(lubridate)
 library(knitr)
 library(here)
 library(car)
-library(hakaisalmon)
-# This same data warngling file should be used for the pdf report as well as the shiny app
+library(googledrive)
+# This same data wrangling file should be used for the pdf report as well as the shiny app
 f <- function(x) {
   format(x + as.Date("2018-01-01") -1, format = "%B %d")
 }
 
-# Currently 2019 field and lab data are not thoroughly QC'd and entered into our
-# database; In the meantime we'll use the raw data from googlesheets.
-# TODO: Replace all 2019 raw googlesheet data with QC'd JSP database data
-  
-# Add in 2019 field data from google sheet
-library(googlesheets)
-field_2019 <- gs_key("1cHgZszv--FlV207cwSpe9hFJipb7HhS4IW9vVrUNg8M",
-                     lookup = FALSE, visibility = "private")
+# Downloads and unpacks the .zip of JSP Data v.1.0.2 from the Hakai Metadata Catalogue, DOI http://dx.doi.org/10.21966/1.566666 Change the version number and re-download when there is an update released.
 
-survey_data <- gs_read(field_2019, ws = "survey_data") %>% 
-  drop_na(survey_id) %>% 
-  mutate(sampling_week = as.numeric((yday(survey_date) + 4) %/% 7)) 
+# drive_download(as_id("https://drive.google.com/open?id=1dSaGlM9Em6Lo9_jfL9qO7nnm8pdjMYNf"),
+#                path = here("data", "v1.0.2.zip"),
+#                overwrite = TRUE)
+
+sites <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/sites.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE))
+
+survey_data <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/survey_data.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE)) %>% 
+  mutate(sampling_week = as.numeric((yday(survey_date) + 4) %/% 7)) %>% 
+  left_join(select(sites,
+                   site_id,
+                   site_name,
+                   region,
+                   zone),
+            by = "site_id")
 
 survey_data$sampling_week <- recode_factor(survey_data$sampling_week, 
                                            `18` = "May 5",
@@ -46,36 +50,25 @@ survey_data$sampling_week <- recode_factor(survey_data$sampling_week,
                                            `25` = "June 23",
                                            `26` = "June 30", 
                                            `27` = "July 6", 
-                                           `28` = "July 13")
+                                           `28` = "July 13",
+                                           .default = "OUT")
+survey_data <- survey_data %>% 
+  filter(sampling_week != "OUT") # Removes time periods inconsistent between years
 
+seine_data <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/seine_data.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE))
 
-seine_data <- gs_read(field_2019, ws = "seine_data")
-
-survey_seines_2019 <- full_join(seine_data, survey_data, by = "survey_id") %>% 
+survey_seines <- left_join(survey_data, seine_data, by = "survey_id") %>% 
   mutate(year = year(survey_date)) %>% 
   drop_na(survey_id) %>% 
-  mutate(yday = yday(survey_date)) %>% 
+  mutate(yday = yday(survey_date),
+         year = year(survey_date)) %>% 
   select(-contains("time")) %>% 
-  # remove ad-hoc collections from migration timing calcs & sampling events forom normal sampling period (May 1 - July 9)
+  # remove ad-hoc collections from migration timing calcs & sampling events from normal sampling period (May 1 - July 9) and only select sites that were collected in every year, or atleast represent the various regions in an assumedly similar way
   filter(
     survey_type == "standard",
     collection_protocol == "SEMSP",
     set_type == "targeted",
-    yday < 190
-    )
-
-rm(survey_data)
-rm(seine_data)
-
-# Import data from 2015-2018
-survey_seines_2015_2018 <- left_join(read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/survey_data.csv"), read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/seine_data.csv")) %>% 
-  left_join(read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sites.csv"))
-
-survey_seines_2015_2018 <- survey_seines_2015_2018 %>% 
-# The way time is stored in the data package files is in a different format from the raw data
-  select(-contains("time")) %>% 
-  # only include consistently sampled sites with similar catchabilities
-  filter(
+    yday < 190,
     site_id %in% c(
       "D07",
       "D09",
@@ -90,66 +83,33 @@ survey_seines_2015_2018 <- survey_seines_2015_2018 %>%
       "J02",
       "J09",
       "J11"
+      )
     )
-  ) %>%
-  mutate(year = year(survey_date),
-         yday = yday(survey_date)
-  ) %>% 
-  # remove ad-hoc collections from migration timing calcs & sampling events forom normal sampling period (May 1 - July 9)
-  filter(survey_type == "standard",
-         collection_protocol == "SEMSP",
-         set_type == "targeted",
-         yday < 190)
-
-# Join 2015-2018 with 2019 data
-survey_seines <- bind_rows(survey_seines_2019, survey_seines_2015_2018)
-
-survey_seines$sampling_week <- recode_factor(survey_seines$sampling_week, 
-                                           `18` = "May 5",
-                                           `19` = "May 12" ,
-                                           `20` = "May 19", 
-                                           `21` = "May 26",
-                                           `22` = "June 2",
-                                           `23` = "June 9", 
-                                           `24` = "June 16", 
-                                           `25` = "June 23",
-                                           `26` = "June 30", 
-                                           `27` = "July 6", 
-                                           `28` = "July 13")
 
 write_csv(survey_seines, here::here("data", "survey_seines.csv"))
 saveRDS(survey_seines,  here::here("data", "survey_seines.RDS"))
 
+fish_field_data <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/fish_field_data.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE), guess_max = 20000)
+
+survey_seines_fish <- left_join(survey_seines, fish_field_data, by = "seine_id") %>% 
+  drop_na(ufn)
+
+sealice_field_data <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/sealice_field.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE))
 
 current_year <- max(survey_seines$year, na.rm = T)
 project_years <- current_year - 2015 + 1
 study_range <- paste(2015, "-", current_year)
 
-## THIS SHOULD ALL BE FINE
 ```
 
 ```{r sealice}
-# Bring in 2019 raw data from google sheets to join
-fish_field_data_2019 <- gs_read(field_2019, ws = "fish_field_data")
-survey_seines_fish_2019 <- left_join(survey_seines_2019, fish_field_data_2019, by = "seine_id") %>% 
-  drop_na(ufn)
 
-# QC that only the proper fish are filtered out by the seine/survey restrictions in the setup chunk
-# s <- fish_field_data_2019 %>% 
-#   left_join(seine_data, by = "seine_id") %>%
-#   left_join(survey_data, by = c("survey_id.x" = "survey_id")) %>% 
-#   filter(!ufn %in% survey_seines_fish_2019$ufn) %>% 
-#   group_by(seine_id, survey_date, site_id, set_type, survey_type, collection_protocol) %>% 
-#   summarize(count=n()) %>% 
-#   mutate(yday = yday(survey_date))
-
-sealice_field_data_2019 <- gs_read(field_2019, ws = "sealice_field_data")
-
-fish_and_sealice_field_data_2019 <- left_join(survey_seines_fish_2019, sealice_field_data_2019, by = "ufn") %>%
-  filter(field_lice_id_protocol != "NA") %>%
-  mutate(all_lice = cal_mot + cpaf + caf + cgf + lpam + lpaf + lam + laf + lgf,
-         motile_caligus = cal_mot + cpaf + caf + cgf,
-         motile_lep = lpam + lpaf + lam + laf + lgf) %>% 
+# Summarize field counts of motile sea lice only
+fish_and_sealice_field_data <- left_join(survey_seines_fish, sealice_field_data, by = "ufn") %>%
+  filter(lice_id_protocol_field != "NA") %>%
+  mutate(all_lice = cal_mot_field + cgf_field + lpam_field + lpaf_field + lam_field + laf_field + lgf_field,
+         motile_caligus = cal_mot_field,
+         motile_lep = lpam_field + lpaf_field + lam_field + laf_field + lgf_field) %>% 
   select(ufn, survey_date, site_id, region, species, year, all_lice, motile_caligus, motile_lep) %>% 
   gather(`motile_caligus`,
          `motile_lep`,
@@ -159,13 +119,11 @@ fish_and_sealice_field_data_2019 <- left_join(survey_seines_fish_2019, sealice_f
   select(ufn, survey_date, site_id, region, species, louse_species, n_lice, year)
 
 
-#### end 2019 update section and import past years' data from the data package
-sealice_field <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sealice_field.csv")
-
 # To get all lab motiles, you need to join the results from the lab_motile and lab_finescale tables.
 # Stages in lab_finescale need to be summed so that they're at the same level of precision as lab_motiles
-sealice_lab_mot <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sealice_lab_mot.csv")
-sealice_lab_fs_mot <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/sealice_lab_fs.csv") %>% 
+sealice_lab_mot <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/sealice_lab_mot.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE))
+
+sealice_lab_fs_mot <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/sealice_lab_fs.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE)) %>% 
   mutate(lpam_lab = lep_pa_m_1 + lep_pa_m_2,
          lpaf_lab = lep_pa_f_1 + lep_pa_f_2,
          cm_lab = cal_pa_m + cal_a_m) %>% 
@@ -184,11 +142,7 @@ sealice_lab_fs_mot <- read_csv("https://raw.githubusercontent.com/HakaiInstitute
 
 sealice_lab_motiles <- bind_rows(sealice_lab_mot, sealice_lab_fs_mot)
 
-
-fish_field_data <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/master/data/fish_field_data.csv", guess_max = 10000)
-
-lab_lice <-
-  inner_join(survey_seines, fish_field_data, by = "seine_id") %>%
+lab_lice <- survey_seines_fish %>%
   inner_join(sealice_lab_motiles, by = "ufn") %>%
   drop_na(cm_lab) %>% 
   # lump all sexes and stages of adult caligus
@@ -214,7 +168,6 @@ lab_lice <-
   select(
     ufn,
     site_id,
-    semsp_id,
     species,
     region,
     survey_date,
@@ -222,9 +175,8 @@ lab_lice <-
     motile_lep_lab
   )
 
-field_lice <-
-  left_join(survey_seines, fish_field_data) %>%
-  left_join(sealice_field) %>%
+field_lice <- survey_seines_fish %>% 
+  left_join(sealice_field_data, by = "ufn") %>%
   drop_na(cal_mot_field) %>% 
   mutate(
     motile_caligus_field = rowSums(select(
@@ -245,7 +197,6 @@ field_lice <-
   select(
     ufn,
     site_id,
-    semsp_id,
     species,
     region,
     survey_date,
@@ -273,9 +224,7 @@ sealice_time_series <- motile_lice %>%
          `all_lice`,
          key = louse_species,
          value = n_lice) %>%
-  mutate(year = year(survey_date)
-  ) %>% 
-  bind_rows(fish_and_sealice_field_data_2019) %>% 
+  mutate(year = year(survey_date)) %>% 
   #TODO: Consider whether these are the appropriate sites
   filter(
     site_id %in% c(
@@ -299,6 +248,7 @@ sealice_time_series <- motile_lice %>%
 
 write_csv(sealice_time_series, here("data", "sealice_time_series.csv"))
 saveRDS(sealice_time_series,  here::here("data", "sealice_time_series.RDS"))
+
 
 abundance_df <- sealice_time_series %>% 
   group_by(year, region, louse_species, species) %>% 
@@ -356,13 +306,13 @@ library(dplyr)
 library(tidyr)
 library(broom)
 library(purrr)
-
-# I think this is it, but I can't figure out how to iterate over all the environments
 library(modelr)
+
 mean_n_lice <- function(splits) {
   x <- analysis(splits)
   mean(x$n_lice)
 }
+#TODO: Write function for intensity and prevalence
 
 # this_is_it correctly nests the data into its hierarchical form
 this_is_it <- sealice_time_series %>% 
@@ -376,14 +326,14 @@ this_is_it <- this_is_it[-row_lt1]
 # Written by Biljana
 boots <- lapply(1:length(this_is_it), function(x){bootstraps(this_is_it[[x]], times=1000)})
  
-boot_samples <- lapply(1:length(boots),function(x){  
+abund_boot_samples <- lapply(1:length(boots),function(x){  
   boots[[x]] %>% 
   mutate(samples = unlist(map(splits, mean_n_lice)))})
 
+extract.boot.CI <- lapply(1:length(abund_boot_samples), function(x){quantile(abund_boot_samples[[x]]$samples,c(0.025, 0.975))} )
 
-extract.boot.CI <- lapply(1:length(boot_samples), function(x){quantile(boot_samples[[x]]$samples,c(0.025, 0.975))} )
+extract.boot.CI = do.call(rbind,extract.boot.CI)
 
-extract.boot.CI=do.call(rbind,extract.boot.CI)
 # Back to Brett's code
 extract.boot.CI <- as_tibble(extract.boot.CI) 
 extract.boot.CI$estimate <- (extract.boot.CI$`97.5%` + extract.boot.CI$`2.5%`) / 2
@@ -427,6 +377,7 @@ saveRDS(catch_intensity,  here::here("data", "catch_intensity.RDS"))
 ```
 
 ```{r Migration Timing}
+
 #TODO: better deal with doubled intensity during peak this year, rather than simply removing extra seines as done below
 
 # Manually remove additional seines conducted during doubled effort period of peak migration
@@ -504,7 +455,7 @@ so_total_catch_expanded_cum_DI <-
   filter(region == "DI")
 
 so_total_predict_average_prop_DI <-
-  log_cumul_abund(
+  hakaisalmon::log_cumul_abund(
     so_total_catch_expanded_cum_DI$percent,
     so_total_catch_expanded_cum_DI$survey_date
   ) %>%
@@ -550,7 +501,7 @@ pi_total_catch_expanded_cum_DI <-
   filter(region == "DI")
 
 pi_total_predict_average_prop_DI <-
-  log_cumul_abund(
+  hakaisalmon::log_cumul_abund(
     pi_total_catch_expanded_cum_DI$percent,
     pi_total_catch_expanded_cum_DI$survey_date
   ) %>%
@@ -593,7 +544,7 @@ cu_total_catch_expanded_cum_DI <-
   filter(region == "DI")
 
 cu_total_predict_average_prop_DI <-
-  log_cumul_abund(
+  hakaisalmon::log_cumul_abund(
     cu_total_catch_expanded_cum_DI$percent,
     cu_total_catch_expanded_cum_DI$survey_date
   ) %>%
@@ -652,7 +603,7 @@ so_cum_abund_annual_DI_2015 <- daily_mean_cumul_abund_annual %>%
   filter(species == "so_total", year == 2015)
 
 so_predict_annual_prop_DI_2015 <-
-  log_cumul_abund(so_cum_abund_annual_DI_2015$percent,
+  hakaisalmon::log_cumul_abund(so_cum_abund_annual_DI_2015$percent,
                   so_cum_abund_annual_DI_2015$survey_date) %>%
   mutate(region = "DI", year = 2015) %>%
   mutate(daily_percent = y - lag(y), species = "SO")
@@ -662,7 +613,7 @@ cu_cum_abund_annual_DI_2015 <- daily_mean_cumul_abund_annual %>%
   filter(species == "cu_total", year == 2015)
 
 cu_predict_annual_prop_DI_2015 <-
-  log_cumul_abund(cu_cum_abund_annual_DI_2015$percent,
+  hakaisalmon::log_cumul_abund(cu_cum_abund_annual_DI_2015$percent,
                   cu_cum_abund_annual_DI_2015$survey_date) %>%
   mutate(region = "DI", year = 2015) %>%
   mutate(daily_percent = y - lag(y), species = "CU")
@@ -673,7 +624,7 @@ so_cum_abund_annual_DI_2016 <- daily_mean_cumul_abund_annual %>%
   filter(species == "so_total", year == 2016)
 
 so_predict_annual_prop_DI_2016 <-
-  log_cumul_abund(so_cum_abund_annual_DI_2016$percent,
+  hakaisalmon::log_cumul_abund(so_cum_abund_annual_DI_2016$percent,
                   so_cum_abund_annual_DI_2016$survey_date) %>%
   mutate(region = "DI", year = 2016) %>%
   mutate(daily_percent = y - lag(y), species = "SO")
@@ -683,7 +634,7 @@ pi_cum_abund_annual_DI_2016 <- daily_mean_cumul_abund_annual %>%
   filter(species == "pi_total", year == 2016)
 
 pi_predict_annual_prop_DI_2016 <-
-  log_cumul_abund(pi_cum_abund_annual_DI_2016$percent,
+  hakaisalmon::log_cumul_abund(pi_cum_abund_annual_DI_2016$percent,
                   pi_cum_abund_annual_DI_2016$survey_date) %>%
   mutate(region = "DI", year = 2016) %>%
   mutate(daily_percent = y - lag(y), species = "PI")
@@ -693,7 +644,7 @@ cu_cum_abund_annual_DI_2016 <- daily_mean_cumul_abund_annual %>%
   filter(species == "cu_total", year == 2016)
 
 cu_predict_annual_prop_DI_2016 <-
-  log_cumul_abund(cu_cum_abund_annual_DI_2016$percent,
+  hakaisalmon::log_cumul_abund(cu_cum_abund_annual_DI_2016$percent,
                   cu_cum_abund_annual_DI_2016$survey_date) %>%
   mutate(region = "DI", year = 2016) %>%
   mutate(daily_percent = y - lag(y), species = "CU")
@@ -704,7 +655,7 @@ so_cum_abund_annual_DI_2017 <- daily_mean_cumul_abund_annual %>%
   filter(species == "so_total", year == 2017)
 
 so_predict_annual_prop_DI_2017 <-
-  log_cumul_abund(so_cum_abund_annual_DI_2017$percent,
+  hakaisalmon::log_cumul_abund(so_cum_abund_annual_DI_2017$percent,
                   so_cum_abund_annual_DI_2017$survey_date) %>%
   mutate(region = "DI", year = 2017) %>%
   mutate(daily_percent = y - lag(y), species = "SO")
@@ -715,7 +666,7 @@ cu_cum_abund_annual_DI_2017 <- daily_mean_cumul_abund_annual %>%
   filter(species == "cu_total", year == 2017)
           
 cu_predict_annual_prop_DI_2017 <-
-  log_cumul_abund(cu_cum_abund_annual_DI_2017$percent,
+  hakaisalmon::log_cumul_abund(cu_cum_abund_annual_DI_2017$percent,
                   cu_cum_abund_annual_DI_2017$survey_date) %>%
   mutate(region = "DI", year = 2017) %>%
   mutate(daily_percent = y - lag(y), species = "CU")
@@ -728,7 +679,7 @@ write_csv(cu_cum_abund_annual_DI_2017, here("data", "cu_cum_abund_DI_2017.csv"))
 saveRDS(cu_cum_abund_annual_DI_2017, here::here("data", "cu_cum_abund_annual_DI_2017.RDS"))          
 
 cu_predict_annual_prop_DI_2017 <-
-  log_cumul_abund(cu_cum_abund_annual_DI_2017$percent,
+  hakaisalmon::log_cumul_abund(cu_cum_abund_annual_DI_2017$percent,
                   cu_cum_abund_annual_DI_2017$survey_date) %>%
   mutate(region = "DI", year = 2017) %>%
   mutate(daily_percent = y - lag(y), species = "CU")
@@ -747,7 +698,7 @@ so_cum_abund_annual_DI_2018 <- daily_mean_cumul_abund_annual %>%
   filter(species == "so_total", year == 2018)
 
 so_predict_annual_prop_DI_2018 <-
-  log_cumul_abund(so_cum_abund_annual_DI_2018$percent,
+  hakaisalmon::log_cumul_abund(so_cum_abund_annual_DI_2018$percent,
                   so_cum_abund_annual_DI_2018$survey_date) %>%
   mutate(region = "DI", year = 2018) %>%
   mutate(daily_percent = y - lag(y), species = "SO")
@@ -757,7 +708,7 @@ pi_cum_abund_annual_DI_2018 <- daily_mean_cumul_abund_annual %>%
   filter(species == "pi_total", year == 2018)
 
 pi_predict_annual_prop_DI_2018 <-
-  log_cumul_abund(pi_cum_abund_annual_DI_2018$percent,
+  hakaisalmon::log_cumul_abund(pi_cum_abund_annual_DI_2018$percent,
                   pi_cum_abund_annual_DI_2018$survey_date) %>%
   mutate(region = "DI", year = 2018) %>%
   mutate(daily_percent = y - lag(y), species = "PI")
@@ -767,7 +718,7 @@ cu_cum_abund_annual_DI_2018 <- daily_mean_cumul_abund_annual %>%
   filter(species == "cu_total", year == 2018)
 
 cu_predict_annual_prop_DI_2018 <-
-  log_cumul_abund(cu_cum_abund_annual_DI_2018$percent,
+  hakaisalmon::log_cumul_abund(cu_cum_abund_annual_DI_2018$percent,
                   cu_cum_abund_annual_DI_2018$survey_date) %>%
   mutate(region = "DI", year = 2018) %>%
   mutate(daily_percent = y - lag(y), species = "CU")
@@ -778,7 +729,7 @@ so_cum_abund_annual_DI_2019 <- daily_mean_cumul_abund_annual %>%
   filter(species == "so_total", year == 2019)
 
 so_predict_annual_prop_DI_2019 <-
-  log_cumul_abund(so_cum_abund_annual_DI_2019$percent,
+  hakaisalmon::log_cumul_abund(so_cum_abund_annual_DI_2019$percent,
                   so_cum_abund_annual_DI_2019$survey_date) %>%
   mutate(region = "DI", year = 2019) %>%
   mutate(daily_percent = y - lag(y), species = "SO")
@@ -788,7 +739,7 @@ pi_cum_abund_annual_DI_2019 <- daily_mean_cumul_abund_annual %>%
   filter(species == "pi_total", year == 2019)
 
 pi_predict_annual_prop_DI_2019 <-
-  log_cumul_abund(pi_cum_abund_annual_DI_2019$percent,
+  hakaisalmon::log_cumul_abund(pi_cum_abund_annual_DI_2019$percent,
                   pi_cum_abund_annual_DI_2019$survey_date) %>%
   mutate(region = "DI", year = 2019) %>%
   mutate(daily_percent = y - lag(y), species = "PI")
@@ -798,7 +749,7 @@ cu_cum_abund_annual_DI_2019 <- daily_mean_cumul_abund_annual %>%
   filter(species == "cu_total", year == 2019)
 
 cu_predict_annual_prop_DI_2019 <-
-  log_cumul_abund(cu_cum_abund_annual_DI_2019$percent,
+  hakaisalmon::log_cumul_abund(cu_cum_abund_annual_DI_2019$percent,
                   cu_cum_abund_annual_DI_2019$survey_date) %>%
   mutate(region = "DI", year = 2019) %>%
   mutate(daily_percent = y - lag(y), species = "CU")
@@ -864,15 +815,12 @@ saveRDS(peak_dates, here::here("data", "peak_dates.RDS"))
 
 ```{r Lengths and Condition}
 
+fish_lab_data <- read_csv(unzip(here("data", "v1.0.2.zip"), 
+                                files = "data/fish_lab_data.csv", 
+                                exdir = here("data", "v1.0.2"),
+                                overwrite = TRUE), guess_max = 5000)
 
-fish_field_data_2019 <- gs_read(field_2019, ws = "fish_field_data")
- 
-survey_seines_fish_2019 <- left_join(survey_seines_2019, fish_field_data_2019) %>% 
-  select(survey_date = date, region, species, weight, fork_length) %>%
-  mutate(year = factor(year(survey_date))) %>% 
-  drop_na()
-
-fish_data <- left_join(hakaisalmon::fish_field_data, hakaisalmon::fish_lab_data) %>%
+fish_data <- left_join(survey_seines_fish, fish_lab_data, by = "ufn") %>%
   # combine both fork length measurements
   mutate(
     fork_length_lab = as.numeric(fork_length),
@@ -880,36 +828,23 @@ fish_data <- left_join(hakaisalmon::fish_field_data, hakaisalmon::fish_lab_data)
     fork_length = coalesce(fork_length_lab, fork_length_field)
   )
 
-length_histo <- left_join(survey_seines, fish_data) %>%
+length_histo <- fish_data %>%
   select(survey_date, region, species, fork_length) %>%
   drop_na(fork_length) %>%
   mutate(year = year(survey_date)) %>%
   # Remove incidtentaly sampled species
   filter(species != "CK", species != "CO", species != "HE") %>%
-  mutate(year = as.factor(year)) %>% 
-  bind_rows(survey_seines_fish_2019) %>% 
-  select(-weight)
+  mutate(year = as.factor(year))
 
 saveRDS(length_histo, here::here("data", "length_histo.RDS"))
 write_csv(length_histo, here::here("data", "length_histo.csv"))
 
-#TODO: Update so length and weight data come from the JSP database not EIMS Data Portal
 #TODO: Filter lengths and weights to only fish from between May 1 and July 9
 
-# Run this line independently before the rest of the code to get the API authentication
-client <- hakaiApi::Client$new() # Follow stdout prompts to get an API token
-
-# Change date column title so I can match up columns
-survey_seines_fish_2019 <- survey_seines_fish_2019 %>% 
-  rename(date = survey_date) %>% 
-  select(-region)
-# Make a data request for fish data
-endpoint <- sprintf("%s/%s", client$api_root, "eims/views/output/jsp_fish?limit=-1")
-fish_cond <- client$get(endpoint) %>% 
-  select(date, species, weight, fork_length) %>% 
+fish_cond <- fish_data %>% 
+  select(survey_date, species, weight, fork_length) %>% 
   filter(species %in% c('SO', 'PI', 'CU', 'CO')) %>% 
-  mutate(year = factor(year(date))) %>% 
-  bind_rows(survey_seines_fish_2019)
+  mutate(year = factor(year(survey_date))) 
 
 write_csv(fish_cond, here("data", "fish_cond.csv"))
 saveRDS(fish_cond, here("data", "fish_cond.RDS"))
@@ -965,10 +900,7 @@ saveRDS(proportions, here::here("data", "proportion.RDS"))
 # Run this line indpendently, check console for URL, and authorize
 client <- hakaiApi::Client$new()
 
-qu39_endpoint <-
-  sprintf("%s/%s",
-          client$api_root,
-          "ctd/views/file/cast/data?station=QU39&limit=-1")
+qu39_endpoint <- sprintf("%s/%s", client$api_root, "ctd/views/file/cast/data?station=QU39&limit=-1")
 
 qu39_all <- client$get(qu39_endpoint) %>%
   mutate(
