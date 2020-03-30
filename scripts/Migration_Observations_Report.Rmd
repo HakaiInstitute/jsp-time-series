@@ -6,26 +6,22 @@ abstract: >
 header-includes: >
   \usepackage{lipsum}
   \usepackage{float}
-bibliography: references.bib
 output:
   bookdown::pdf_document2:
     toc: no
 ---
 
 ```{r setup, include = FALSE, messages = FALSE}
-
 library(tictoc)
-tic("render pdf")
 knitr::opts_chunk$set(fig.pos = 'H', echo = FALSE, warning = FALSE, message = FALSE, error = FALSE)
-# All data used for this analysis is from the hakaisalmon R package v0.2.0 at https://hakaiinstitute.github.io/hakaisalmon/
-library(hakaisalmon)
+#A all data that comes 
+
 library(tidyverse)
 library(lubridate)
 library(knitr)
 library(here)
 library(car)
 library(ggridges)
-library(forcats)
 
 theme_set(ggsidekick::theme_sleek(base_size = 17)) #Thanks Sean Anderson, package hosted on GitHub
 
@@ -42,7 +38,7 @@ average_temps <- read_csv(here("data", "average_temps.csv"))
 proportion <- read_csv(here("data", "proportion.csv"))
 # Migration Timing Data
 predict_average_prop <- read_csv(here("data", "predict_average_prop.csv"))
-predict_annual_prop <- read_csv(here("data", "predict_annual_prop.csv"))
+predict_annual_prop <- readRDS(here("data", "predict_annual_prop.RDS"))
 peak_dates <- read_csv(here("data", "peak_dates.csv"))
 catch_intensity <- read_csv(here("data", "catch_intensity.csv"))
 # I can't get 2017 chum logistic growth line (beause we didn't capture of the migration) so I use points instead
@@ -56,13 +52,13 @@ fish_cond$species <- fct_relevel(fish_cond$species, "Sockeye" = "SO", "Pink" = '
 levels(fish_cond$species) <- c('Sockeye', 'Pink', 'Chum', 'Coho')
 
 # Standardized z-scores
-heatmap_data <- read.csv(here("data", "heatmap_data.csv")) 
+heatmap_data <- readRDS(here("data", "heatmap_data.RDS"))
 
 
-spp_labels <- c(CU = "Chum", PI = "Pink", SO = "Sockeye", DI = "Discovery Islands", 
+spp_labels <- c(CU = "Chum", PI = "Pink", SO = "Sockeye", DI = "Discovery Islands",
                 JS = "Johnstone Strait")
 
-pl_colours <- c("pi_total" = "pink", "so_total" = "#00BFC4", "cu_total" = "#7CAE00", 
+pl_colours <- c("pi_total" = "pink", "so_total" = "#00BFC4", "cu_total" = "#7CAE00",
                     "co_total" = "#F8766D", "he_total" = "#C77CFF")
 
 current_year <- max(survey_seines$year, na.rm = T)
@@ -321,8 +317,8 @@ sst_nice_table <- sst_annual_mean %>%
 
 ```
 
-```{r map, fig.cap = "Sampling locations in 2018", fig.align='left', out.width="90%"}
-include_graphics('map.png')
+```{r map, fig.cap = "Sampling locations in 2019", fig.align='left', out.width="90%"}
+include_graphics(here('map.png'))
 ```
 
 # Results
@@ -449,7 +445,7 @@ ggplot(catch_intensity, aes(x = factor(year), y = mean_catch, fill = species)) +
                 position = position_dodge(0.9)) +
   xlab("Year") +
   ylab("Catch Intensity") +
-  scale_fill_hakai()+
+  hakaisalmon::scale_fill_hakai()+
   labs(fill = "Species") +
   ggtitle("Species Abundance Proxy")
 
@@ -467,7 +463,7 @@ proportion$species <- proportion$species %>%
       geom_bar(colour = "black", stat="identity", position = 'stack') +
       xlab("Year") +
       ylab("Proportion") +
-      scale_fill_hakai() +
+      #hakaisalmon::scale_fill_hakai() +
       labs(fill = "Species") +
       ggtitle("Species Proportions")
 
@@ -486,7 +482,7 @@ ggplot(length_histo, aes(fork_length, y = fct_rev(factor(year)), fill = species)
   xlab("Fork Length (mm)") +
   facet_grid(species ~ ., labeller = labeller(region = spp_labels, species = spp_labels)) +
   ylab("Year") +
-  scale_fill_hakai() +
+  #scale_fill_hakai() +
   scale_y_discrete(expand = expand_scale(add = c(0.2, 2.8))) +
   coord_cartesian(xlim = c(60, 160)) +
   guides(fill = FALSE) +
@@ -500,9 +496,9 @@ ggsave(here("figs", "lengths.png"), width = 8, height = 6)
 library(cowplot)
 library(ggpubr)
 time_series_fish_cond <- fish_cond %>% 
-  mutate(year = factor(year(date))) %>% 
+  mutate(year = factor(year(survey_date))) %>% 
   filter(species %in% c("Sockeye", "Pink", "Chum", "Coho"),
-         year != current_year) %>% 
+         year != "2019") %>% 
   mutate(Years = "Study period")
 
 current_fish_cond <- fish_cond %>% 
@@ -559,7 +555,7 @@ df %>%
       # geom_text(aes(y = 0.0, label = paste0(n)), size = 3.15, vjust = 1.25,
       #           position = position_dodge(0.9)) +
       #scale_y_continuous(expand = expand_scale(mult = c(.15, 0))) +
-      scale_fill_hakai() +
+      #scale_fill_hakai() +
       labs(fill = "Louse Species") + 
   theme(legend.text = element_text(face = "italic", size = 10)) +
   #coord_cartesian(ylim = c(0, 1.7)) +

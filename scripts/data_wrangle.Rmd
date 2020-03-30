@@ -296,7 +296,7 @@ sealice_summary_table <- full_join(abundance_df, prevalence) %>%
   rename(Year = year, Region = region, Species = species) %>% 
   mutate(Year = as.character(Year))
 
-write.csv(sealice_summary_table, here("data", "sealice_summary_table.csv"))
+write_csv(sealice_summary_table, here("data", "sealice_summary_table.csv"))
 saveRDS(sealice_summary_table,  here::here("data", "sealice_summary_table.RDS"))
 ```
 
@@ -773,7 +773,9 @@ predict_annual_prop <-
   )
 
 predict_annual_prop$species <- factor(predict_annual_prop$species) %>% 
-  fct_recode("Sockeye" = "SO", "Pink" = "PI", "Chum" = "CU")
+  fct_recode("Sockeye" = "SO", "Pink" = "PI", "Chum" = "CU") 
+
+colnames(predict_annual_prop)[1] <- "x"
 
 write_csv(predict_annual_prop, here::here("data", "predict_annual_prop.csv"))
 saveRDS(predict_annual_prop, here::here("data", "predict_annual_prop.RDS"))
@@ -1450,7 +1452,10 @@ spp_vec <- rep(c("Sockeye", "Pink", "Chum"), each = project_years * n_parameters
 vec3 <- rep(c("Northern Strait of Georgia"), project_years)
 spp_vec <- c(spp_vec, vec3)
 
-heatmap_data$spp <- spp_vec
+heatmap_data$spp <- spp_vec 
+
+heatmap_data <- heatmap_data %>%
+  select(year, Estimate, SD, Z, measure, spp)
 
 
 write_csv(heatmap_data, here("data", "heatmap_data.csv"))
