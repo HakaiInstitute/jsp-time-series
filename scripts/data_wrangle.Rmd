@@ -19,18 +19,18 @@ library(car)
 library(googledrive)
 # This same data wrangling file should be used for the pdf report as well as the shiny app
 f <- function(x) {
-  format(x + as.Date("2018-01-01") -1, format = "%B %d")
+  format(x + as.Date("2019-01-01") -1, format = "%B %d")
 }
 
 # Downloads and unpacks the .zip of JSP Data v.1.0.2 from the Hakai Metadata Catalogue, DOI http://dx.doi.org/10.21966/1.566666 Change the version number and re-download when there is an update released.
 
-# drive_download(as_id("https://drive.google.com/open?id=1dSaGlM9Em6Lo9_jfL9qO7nnm8pdjMYNf"),
+# drive_download(as_id("https://driv.ejsp-datgaoogle.com/open?id=1dSaGlM9Em6Lo9_jfL9qO7nnm8pdjMYNf"),
 #                path = here("data", "v1.0.2.zip"),
 #                overwrite = TRUE)
 
-sites <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/sites.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE))
+sites <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/release/1.1.0/data/sites.csv")
 
-survey_data <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/survey_data.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE)) %>% 
+survey_data <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/release/1.1.0/data/survey_data.csv") %>% 
   mutate(sampling_week = as.numeric((yday(survey_date) + 4) %/% 7)) %>% 
   left_join(select(sites,
                    site_id,
@@ -55,7 +55,7 @@ survey_data$sampling_week <- recode_factor(survey_data$sampling_week,
 survey_data <- survey_data %>% 
   filter(sampling_week != "OUT") # Removes time periods inconsistent between years
 
-seine_data <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/seine_data.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE))
+seine_data <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/release/1.1.0/data/seine_data.csv")
 
 survey_seines <- left_join(survey_data, seine_data, by = "survey_id") %>% 
   mutate(year = year(survey_date)) %>% 
@@ -89,12 +89,12 @@ survey_seines <- left_join(survey_data, seine_data, by = "survey_id") %>%
 write_csv(survey_seines, here::here("data", "survey_seines.csv"))
 saveRDS(survey_seines,  here::here("data", "survey_seines.RDS"))
 
-fish_field_data <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/fish_field_data.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE), guess_max = 20000)
+fish_field_data <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/release/1.1.0/data/fish_field_data.csv", guess_max = 20000)
 
 survey_seines_fish <- left_join(survey_seines, fish_field_data, by = "seine_id") %>% 
   drop_na(ufn)
 
-sealice_field_data <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/sealice_field.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE))
+sealice_field_data <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/release/1.1.0/data/sealice_field.csv")
 
 current_year <- max(survey_seines$year, na.rm = T)
 project_years <- current_year - 2015 + 1
@@ -121,9 +121,9 @@ fish_and_sealice_field_data <- left_join(survey_seines_fish, sealice_field_data,
 
 # To get all lab motiles, you need to join the results from the lab_motile and lab_finescale tables.
 # Stages in lab_finescale need to be summed so that they're at the same level of precision as lab_motiles
-sealice_lab_mot <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/sealice_lab_mot.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE))
+sealice_lab_mot <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/release/1.1.0/data/sealice_lab_mot.csv")
 
-sealice_lab_fs_mot <- read_csv(unzip(here("data", "v1.0.2.zip"), files = "data/sealice_lab_fs.csv", exdir = here("data", "v1.0.2"), overwrite = TRUE)) %>% 
+sealice_lab_fs_mot <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/release/1.1.0/data/sample_results/sealice_lab_fs.csv") %>% 
   mutate(lpam_lab = lep_pa_m_1 + lep_pa_m_2,
          lpaf_lab = lep_pa_f_1 + lep_pa_f_2,
          cm_lab = cal_pa_m + cal_a_m) %>% 
