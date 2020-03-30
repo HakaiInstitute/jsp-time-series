@@ -1,0 +1,13 @@
+average_temps.RDS
+average_temps.csv
+ctd_all.RDS
+ctd_all.csv
+heatmap_data.RDS
+heatmap_data.csv
+lice_bootstraps.csv
+lice_bootstraps.rds
+min_max_temps.RDS
+min_max_temps.csv
+sealice_summary_table.csv
+temperature_anomaly_data.RDS
+temperature_anomaly_data.csv
