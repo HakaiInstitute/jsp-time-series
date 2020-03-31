@@ -380,13 +380,32 @@ saveRDS(catch_intensity,  here::here("data", "catch_intensity.RDS"))
 
 #TODO: better deal with doubled intensity during peak this year, rather than simply removing extra seines as done below
 
-# Manually remove additional seines conducted during doubled effort period of peak migration
+# Take the average of surveys with double effort in 2019
+
+dbl_effort_2019 <- survey_seines %>% 
+  distinct(survey_id, .keep_all = TRUE) %>% 
+  filter(survey_date > as.Date("2019-01-01") & survey_date < ("2019-12-31")) %>% 
+  mutate(week = isoweek(survey_date),
+         site_week = paste(site_id,week,sep="-")) %>% 
+  group_by(site_week) %>% 
+  mutate(count=n()) %>% 
+  filter(count>1) %>% 
+  mutate_at(c("so_total", "pi_total", "cu_total", "co_total", "he_total"), mean) %>% 
+  mutate_at(c("so_total", "pi_total", "cu_total", "co_total", "he_total"), funs(round(.,0)))
 
 # I first take Cumulative abundance
-
 tidy_catch <- survey_seines %>%
-  #remove doubled up seines
-  filter(!survey_id %in% c('DE610', 'DE611', 'DE612', 'DE613', 'DE615','DE624', 'DE625', 'DE626', 'DE627')) %>% 
+  # Filter out the double-effort surveys
+  filter(!survey_id %in% dbl_effort_2019$survey_id)
+
+dbl_effort_2019 <- dbl_effort_2019 %>% 
+  # Remove secondary surveys so only one record remains that contains the averaged catch values
+  distinct(site_week, .keep_all = TRUE) %>% 
+  ungroup() %>% 
+  select(-site_week)
+
+tidy_catch <- tidy_catch %>% 
+  bind_rows(dbl_effort_2019) %>% 
   select(
     survey_date,
     seine_id,
