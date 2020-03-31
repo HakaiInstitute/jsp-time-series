@@ -836,10 +836,7 @@ saveRDS(peak_dates, here::here("data", "peak_dates.RDS"))
 
 ```{r Lengths and Condition}
 
-fish_lab_data <- read_csv(unzip(here("data", "v1.0.2.zip"), 
-                                files = "data/fish_lab_data.csv", 
-                                exdir = here("data", "v1.0.2"),
-                                overwrite = TRUE), guess_max = 5000)
+fish_lab_data <- read_csv("https://raw.githubusercontent.com/HakaiInstitute/jsp-data/release/1.1.0/data/fish_lab_data.csv", guess_max = 10000)
 
 fish_data <- left_join(survey_seines_fish, fish_lab_data, by = "ufn") %>%
   # combine both fork length measurements
