@@ -430,7 +430,7 @@ ggplot()+
 ggsave(here("figs", "migration_timing.png"), width = 9, height = 6)
 ```
 
-```{r catch-intensity-plot, fig.cap = "The catch intensity (our proxy for abundance) of sockeye, pink, and chum salmon in the Discovery Islands and Johnstone Strait. Numbers under each bar indicate the number of seines in which the species was caught, and erorr bars indicate the 95 percent confidence region.", out.width="90%"}
+```{r catch-intensity-plot, fig.cap = "The catch intensity (our proxy for abundance) of sockeye, pink, and chum salmon in the Discovery Islands and Johnstone Strait. Numbers under each bar indicate the number of seines in which the species was caught, and error bars indicate the 95 percent confidence region.", out.width="90%"}
 
 catch_intensity$species <- catch_intensity$species %>% 
   fct_relevel("Sockeye", "Pink", "Chum")
@@ -492,7 +492,7 @@ ggsave(here("figs", "lengths.png"), width = 8, height = 6)
 ```
 
 
-```{r condition-plot, fig.cap=paste("Length and weight regressions for juvenile salmon caught in the Discovery Islands and Johnstone Strait in", current_year, "coloured red, compared to all outher years in black.")}
+```{r condition-plot, fig.cap=paste("Length and weight regressions for juvenile salmon caught in the Discovery Islands and Johnstone Strait in", current_year, "coloured red, compared to all other years in black.")}
 library(cowplot)
 library(ggpubr)
 time_series_fish_cond <- fish_cond %>% 
