@@ -323,7 +323,7 @@ include_graphics(here('map.png'))
 
 # Results
 
-The peak migration date for sockeye in the Discovery Islands in `r current_year` was on `r f(so_q2_DI_current)`, `r round(so_timing_diff)` days `r so_later_or_earlier` than the study-period average of `r f(so_q2_DI_TSA)`. The peak migration date for chum in the Discovery Islands was on `r f(cu_q2_DI_current)`, `r round(cu_timing_diff)` days `r cu_later_or_earlier` than the average of `r f(cu_q2_DI_TSA)`. Peak migration timing for pink salmon is not reported becasue we expect catches of juvenile pink salmon do not originate from the Fraser River in odd years.
+The peak migration date for sockeye in the Discovery Islands in `r current_year` was on `r f(so_q2_DI_current)`, `r round(so_timing_diff)` days `r so_later_or_earlier` than the study-period average of `r f(so_q2_DI_TSA)`. The peak migration date for chum in the Discovery Islands was on `r f(cu_q2_DI_current)`, `r round(cu_timing_diff)` days `r cu_later_or_earlier` than the average of `r f(cu_q2_DI_TSA)`. Peak migration timing for pink salmon is not reported because we expect catches of juvenile pink salmon do not originate from the Fraser River in odd years.
 
 Catch proportion was dominated by sockeye salmon in the Discovery Islands and Johnstone in `r current_year` making up `r so_prop` % of the catch (Table \@ref(tab:proportion-table)) while chum made up `r cu_prop` % and pink `r pi_prop` % (Figure \@ref(fig:proportion-plot)). 
 
@@ -332,7 +332,7 @@ Fish lengths varied between regions and among species and years (Figure \@ref(fi
 Sea-surface temperature in May and June during the juvenile salmon out-migration at QU39 in the northern Strait of Georgia was `r round(sst_stats_table$estimate, 2)` degrees C different than average.
 
 
-```{r heatmap,  fig.cap = "The number of standard deviations (z score) from the study-period average (2015-2018) for key migration parameters. Size and colour saturation of circles indicates the magnitude of the anomaly. Blue colour indicates less than average; grey indicates average; red indicates greater than average. Peak migration date is based on the median date of fish capture in the Discovery Islands. Length is based on the average fork length from the Discovery Islands and Johnstone Strait combined. Parasite load is the average abundance of all sea-louse species in their motile life stages for both the Discovery Islands and Johnstone Strait regions. Ocean temperature describes the mean ocean temperature in the top 30 m at station QU39 in the northern Strait of Georgia in May and June.", out.width = "100%", fig.height=11, fig.width=10}
+```{r heatmap,  fig.cap = paste("The number of standard deviations (z score) from the study-period average (2015-", current_year, "2019) for key migration parameters. Size and colour saturation of circles indicates the magnitude of the anomaly. Blue colour indicates less than average; grey indicates average; red indicates greater than average. Peak migration date is based on the median date of fish capture in the Discovery Islands. Length is based on the average fork length from the Discovery Islands and Johnstone Strait combined. Parasite load is the average abundance of all sea-louse species in their motile life stages for both the Discovery Islands and Johnstone Strait regions. Ocean temperature describes the mean ocean temperature in the top 30 m at station QU39 in the northern Strait of Georgia in May and June.", sep=""), out.width = "100%", fig.height=11, fig.width=10}
 
 cols <- c("#4575b4",
           "lightgrey",
@@ -365,7 +365,7 @@ ggsave(here("figs", "heatmap.png"), width = 13, height = 11)
 ```
 
 
-```{r migration-timing-plot, fig.cap = "Cumulative catch of sockeye, pink, and chum, in the Discovery Islands and Johnstone Strait between 2015 and 2017.", out.width="100%"}
+```{r migration-timing-plot, fig.cap = paste("Cumulative catch of sockeye, pink, and chum, in the Discovery Islands and Johnstone Strait between 2015 and ", current_year, ".", sep=""), out.width="100%"}
 cols <-
   c(
     "2019" = "blue",
@@ -492,7 +492,7 @@ ggsave(here("figs", "lengths.png"), width = 8, height = 6)
 ```
 
 
-```{r condition-plot, fig.cap="Length and weight regressions for juvenile salmon caught in the Discovery Islands and Johnstone Strait in 2018 coloured red, compared to all outher years in black."}
+```{r condition-plot, fig.cap=paste("Length and weight regressions for juvenile salmon caught in the Discovery Islands and Johnstone Strait in", current_year, "coloured red, compared to all outher years in black.")}
 library(cowplot)
 library(ggpubr)
 time_series_fish_cond <- fish_cond %>% 
@@ -627,7 +627,7 @@ sealice_summary_table %>%
 ggsave(here("figs", "sealice_intensity.png"))
 ```
 
-```{r sst-plot, out.width="90%", fig.cap="Thirty-meter depth-integrated ocean temperatures at station QU39 in the northern Strait of Georgia is the solid black line which represents average temperatures from 2015–2017. Blue areas represent temperatures from 2018 that are below the 2015–2017 average and red areas represent above average temperatures. The shaded grey area is 1 SE of the loess regression. The black dots are the daily minimum and maximum temperatures observed over the study-period."}
+```{r sst-plot, out.width="90%", fig.cap=paste("Thirty-meter depth-integrated ocean temperatures at station QU39 in the northern Strait of Georgia is the solid black line which represents average temperatures from 2015–2019. Blue areas represent temperatures from ", current_year, "that are below the 2015–", current_year, "average and red areas represent above average temperatures. The shaded grey area is 1 SE of the loess regression. The black dots are the daily minimum and maximum temperatures observed over the study-period.", sep="")}
 
 temperature_anomaly_data <- temperature_anomaly_data %>% 
       filter(station == "QU39")
