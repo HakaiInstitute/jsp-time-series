@@ -27,7 +27,6 @@ library(hakaiR)
 #install.packages("devtools")
 #devtools::install_github("HakaiInstitute/hakaiR")
 
-#theme_set(ggsidekick::theme_sleek(base_size = 17)) #Thanks Sean Anderson, package hosted on GitHub
 
      # Survey Data
 survey_seines <- read_csv(here("data", "survey_seines.csv")) %>%
@@ -358,7 +357,6 @@ heatmap_data$measure <- heatmap_data$measure %>%
   ylab("") +
   xlab("Year") +
   scale_colour_gradientn(colours = cols) +
-  ggsidekick::theme_sleek(base_size = 19) +
   theme(legend.position = "bottom") +
   guides(color = guide_legend(override.aes = list(size = c(10, 3, 10), alpha = 1)), name = "Z score") +
   labs(color = "Z Score") +
@@ -437,8 +435,7 @@ ggplot()+
   theme(panel.grid.major.y= element_line("#DCDCDC")) +
   theme(panel.grid.major.x= element_line("#DCDCDC")) +
   facet_grid(species ~ .) +
-  ggtitle("Migration Timing") +
-  ggsidekick::theme_sleek()
+  ggtitle("Migration Timing") 
     
 ggsave(here("figs", "migration_timing.png"), width = 9, height = 6)
 ```
