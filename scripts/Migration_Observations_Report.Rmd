@@ -22,8 +22,12 @@ library(knitr)
 library(here)
 library(car)
 library(ggridges)
+library(hakaiR) 
+# install hakaiR from github: 
+#install.packages("devtools")
+#devtools::install_github("HakaiInstitute/hakaiR")
 
-theme_set(ggsidekick::theme_sleek(base_size = 17)) #Thanks Sean Anderson, package hosted on GitHub
+#theme_set(ggsidekick::theme_sleek(base_size = 17)) #Thanks Sean Anderson, package hosted on GitHub
 
      # Survey Data
 survey_seines <- read_csv(here("data", "survey_seines.csv")) %>%
@@ -58,8 +62,11 @@ heatmap_data <- readRDS(here("data", "heatmap_data.RDS"))
 spp_labels <- c(CU = "Chum", PI = "Pink", SO = "Sockeye", DI = "Discovery Islands",
                 JS = "Johnstone Strait")
 
-pl_colours <- c("pi_total" = "pink", "so_total" = "#00BFC4", "cu_total" = "#7CAE00",
-                    "co_total" = "#F8766D", "he_total" = "#C77CFF")
+pl_colours <- c("pi_total" = "pink", 
+                "so_total" = "#00BFC4",
+                "cu_total" = "#7CAE00",
+                "co_total" = "#F8766D",
+                "he_total" = "#C77CFF")
 
 current_year <- max(survey_seines$year, na.rm = T)
 project_years <- current_year - 2015 + 1
@@ -339,11 +346,12 @@ cols <- c("#4575b4",
           "#d73027"
           )
 
+heatmap_data
 heatmap_data$measure <- heatmap_data$measure %>%
     fct_recode("Fork Lengths" = "Length", "Sea-lice Abundance" = "Sea lice Abundance", "Ocean Temperature" = "Sea-surface Temperature")  %>% 
   fct_relevel("Migration Timing", "Catch Intensity", "Fork Lengths", "Sea-lice Abundance", "Ocean Temperature")
-#TODO: make it so the legend show 5 points of size
-ggplot(heatmap_data, aes(year, spp, colour = Z)) +
+#TODO: Enhancement - make it so the legend show 5 points of size
+(ggplot(heatmap_data, aes(year, spp, colour = Z)) +
   geom_point(size = abs(10 * heatmap_data$Z), alpha = 0.1) +
   geom_point(aes(size = abs(10 * Z)), show.legend = F) +
   scale_size_continuous(range = c(3,15)) +
@@ -359,7 +367,8 @@ ggplot(heatmap_data, aes(year, spp, colour = Z)) +
   labs(title = "Juvenile Salmon Migration Observations",
     subtitle = "Migration parameter variability 2015-2019") +
   #theme(panel.grid.major.y= element_line("grey")) +
-  facet_wrap(. ~ measure, ncol = 1, scales = "free") 
+  facet_wrap(. ~ measure, ncol = 1, scales = "free")
+)
 
 ggsave(here("figs", "heatmap.png"), width = 13, height = 11)
 ```
@@ -403,23 +412,27 @@ predict_annual_prop <- predict_annual_prop %>%
 ggplot()+
       labs(x = 'Date', y = 'Cumulative Catch %') +
   # Un comment below if you want to see the study-period average    
-  #geom_line(data = predict_average_prop, aes(x = x, y = y, color = year), size = 2, alpha = 0.75) +
-      geom_line(data = predict_annual_prop, aes(x = x, y = y, color = year 
-                                               ), linetype= 5, size = 1.25, alpha = 0.8) +
+  #geom_line(data = predict_average_prop, aes(x = x, y = y, color = year),
+  #size = 2, alpha = 0.75) +
+      geom_line(data = predict_annual_prop, aes(x = x, y = y,
+                                                color = year),
+                linetype= 5, size = 1.25, alpha = 0.8) +
    geom_smooth(data = cu_cum_abund_annual_DI_2017, aes(x = survey_date,
                                                       y = percent,
                                                       colour = factor(year)),
               linetype = 5,
-                                                      alpha = 0.8, size = 1.25,
-                                                      se = FALSE, span = 1) +
-
-      scale_x_continuous(breaks = c(135, 152, 166, 182, 196), 
-                         labels = c("May 15", "June 1", "June 15", "July 1", "July 15")) +
+              alpha = 0.8, size = 1.25,
+              se = FALSE, span = 1) +
+  scale_x_continuous(breaks = c(135, 152, 166, 182, 196), 
+                     labels = c("May 15", "June 1", "June 15", 
+                                "July 1", "July 15")) +
       coord_cartesian(xlim = c(128, 190)) + 
       #scale_shape_manual(values = shapes) +
       scale_colour_manual(values = cols, name="",
-                         breaks=c("2015-2018", "2015", "2016", "2017", "2018", "2019"),
-                         labels=c("Average", "2015", "2016", "2017", "2018", "2019")) +
+                         breaks=c("2015-2018", "2015", "2016", 
+                                  "2017", "2018", "2019"),
+                         labels=c("Average", "2015", "2016", 
+                                  "2017", "2018", "2019")) +
   theme(legend.position = c(0.9, 0.5)) +
   theme(panel.grid.major.y= element_line("#DCDCDC")) +
   theme(panel.grid.major.x= element_line("#DCDCDC")) +
@@ -435,9 +448,9 @@ ggsave(here("figs", "migration_timing.png"), width = 9, height = 6)
 catch_intensity$species <- catch_intensity$species %>% 
   fct_relevel("Sockeye", "Pink", "Chum")
 
-ggplot(catch_intensity, aes(x = factor(year), y = mean_catch, fill = species)) +
-  geom_bar(colour = "black", stat="identity", position=position_dodge()) +
-  geom_errorbar(aes(ymin = mean_catch - lower_ci,
+(ggplot(catch_intensity, aes(x = factor(year), y = mean_catch, fill = species)) +
+  geom_bar(colour = "black",  stat="identity", position=position_dodge()) +
+  geom_errorbar(aes(ymin = if_else(mean_catch - lower_ci < 0, 0, mean_catch - lower_ci),
                         ymax = mean_catch + upper_ci),
                     width = 0.2,
                     position = position_dodge(0.9)) +
@@ -445,9 +458,9 @@ ggplot(catch_intensity, aes(x = factor(year), y = mean_catch, fill = species)) +
                 position = position_dodge(0.9)) +
   xlab("Year") +
   ylab("Catch Intensity") +
-  hakaisalmon::scale_fill_hakai()+
   labs(fill = "Species") +
-  ggtitle("Species Abundance Proxy")
+  ggtitle("Species Abundance Proxy") +
+  scale_fill_manual(values = hakaiR::hakai_palette("hakai_salmon")))
 
 ggsave(here("figs", "catch_intesity.png"))
 ```
@@ -463,7 +476,7 @@ proportion$species <- proportion$species %>%
       geom_bar(colour = "black", stat="identity", position = 'stack') +
       xlab("Year") +
       ylab("Proportion") +
-      #hakaisalmon::scale_fill_hakai() +
+      scale_fill_manual(values = hakai_palette("hakai_salmon")) +
       labs(fill = "Species") +
       ggtitle("Species Proportions")
 
@@ -486,7 +499,8 @@ ggplot(length_histo, aes(fork_length, y = fct_rev(factor(year)), fill = species)
   scale_y_discrete(expand = expand_scale(add = c(0.2, 2.8))) +
   coord_cartesian(xlim = c(60, 160)) +
   guides(fill = FALSE) +
-  ggtitle("Fork Length Frequency Distributions")
+  ggtitle("Fork Length Frequency Distributions") +
+  scale_fill_manual(values = hakai_palette("hakai_salmon"))
 
 ggsave(here("figs", "lengths.png"), width = 8, height = 6)
 ```
@@ -506,7 +520,7 @@ current_fish_cond <- fish_cond %>%
   mutate(Years = factor(current_year))
 
 
-#TODO: Add histograms to x and y axes
+#TODO: Enhancement - Add histograms to x and y axes
 
 ggplot(data = fish_cond, aes(x = fork_length, y = weight, colour= Years)) +
   geom_point(data = time_series_fish_cond, alpha = .2, size = 3) +
@@ -517,8 +531,7 @@ ggplot(data = fish_cond, aes(x = fork_length, y = weight, colour= Years)) +
   coord_cartesian(xlim = c(60, 177), ylim = c(0, 80)) +
   scale_color_manual(values=c("#B52025", "black")) +
   #theme(legend.position = c(.9, .9), legend.title=element_blank()) +
-  facet_wrap(~species, nrow=2) +
-  ggsidekick::theme_sleek(base_size = 14)
+  facet_wrap(~species, nrow=2)
 
 ggsave(here("figs", "length_weight.png"), width = 8, height = 6)
 
@@ -549,6 +562,7 @@ df %>%
       facet_grid(region ~ species,
                  labeller = labeller(region = spp_labels)) +
       labs(x = "Year", y = "Abundance") +
+      scale_fill_manual(values = hakai_palette("hakai_web")) +
       theme(legend.position="bottom") +
       # geom_text(aes(label = ifelse(Abundance == 0, round(Abundance, 1), '')),
       #          position = position_dodge(0.9), vjust = -0.5) +
@@ -559,8 +573,7 @@ df %>%
       labs(fill = "Louse Species") + 
   theme(legend.text = element_text(face = "italic", size = 10)) +
   #coord_cartesian(ylim = c(0, 1.7)) +
-  ggtitle("Sea Lice Abundance") +
-  ggsidekick::theme_sleek()
+  ggtitle("Sea Lice Abundance")
 
 ggsave(here("figs", "sealice_abundance.png"), width = 7, height = 4)
 ```
@@ -587,7 +600,7 @@ sealice_summary_table %>%
       # geom_text(aes(y = 0.0, label = paste0(n)), size = 3.15, vjust = 1.25,
       #           position = position_dodge(0.9)) +
       # scale_y_continuous(expand = expand_scale(mult = c(.15, 0))) +
-      scale_fill_hakai() +
+     # scale_fill_hakai() +
       labs(fill = "Louse Species") + 
       theme(legend.text = element_text(face = "italic", size = 10)) +
       ggtitle("Sea Lice Prevalence")
@@ -618,7 +631,7 @@ sealice_summary_table %>%
       # geom_text(aes(y = 0.0, label = paste0(n)), size = 3.15, vjust = 1.25,
       #           position = position_dodge(0.9)) +
       # scale_y_continuous(expand = expand_scale(mult = c(.15, 0))) +
-      scale_fill_hakai() +
+      #scale_fill_hakai() +
   coord_cartesian(ylim = c(0,2.5)) +
       labs(fill = "Louse Species") + 
   theme(legend.text = element_text(face = "italic", size = 10)) +
@@ -638,7 +651,7 @@ temperature_anomaly_data <- temperature_anomaly_data %>%
     average_temps <- average_temps %>% 
       filter(station == "QU39")
 
-#TODO: plot only this seasons observations as points and remove min max data
+
 ggplot(data = temperature_anomaly_data, aes(x = yday, y = mean_temp)) +
       geom_point(aes(x = yday, y = predicted_mean_temp), size = 0.1)+
       geom_line(aes(x = yday, y = predicted_mean_temp), size = 1 ) +
