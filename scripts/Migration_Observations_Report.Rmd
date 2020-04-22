@@ -1,14 +1,12 @@
 ---
-title: Juvenile Salmon Migration Observations in the Discovery Islands and Johnstone Strait in 2018
+title: Juvenile Salmon Migration Observations in the Discovery Islands and Johnstone Strait in 2019
 abstract: >
   The Hakai Institute Juvenile Salmon Program has been monitoring juvenile salmon migrations in the Discovery Islands and Johnstone Strait since 2015 with the specific purpose to understand how ocean conditions experienced by juvenile salmon during their early marine migration impacts their growth, health and ultimately survival. We found that during the two of the warmest years of sea-surface temperature recorded in British Columbia waters, juvenile sockeye, pink, and chum left the Strait of Georgia one to two weeks earlier than previously. The temporal distribution of sockeye migration timing out of the Strait of Georgia north through the Discovery Islands was skewed right, indicating that many sockeye migrate together in late May and abundance tails off late into June and July. Pink and chum migrations are more protracted, lasting from early May to late July. Our results indicate that juvenile sockeye exit the Strait of Georgia en masse, likely in response to ocean temperature and foraging conditions. This report summarizes migration timing, fish length and weight, sea-louse loads, purse seine catch composition, and ocean temperatures observed from the first four years of this research and monitoring program. Combining key variables from this research program with observations from freshwater and high-seas sampling will provide, for some stocks, a complete account of the conditions salmon experience during their migration from their natal river to the high seas. These measures will further our knowledge of what drives early marine mortality, and better our understanding of how salmon are adapting to climate change.
   
 header-includes: >
   \usepackage{lipsum}
   \usepackage{float}
-output:
-  bookdown::pdf_document2:
-    toc: no
+output: word_document
 ---
 
 ```{r setup, include = FALSE, messages = FALSE}
@@ -373,14 +371,6 @@ ggsave(here("figs", "heatmap.png"), width = 13, height = 11)
 
 
 ```{r migration-timing-plot, fig.cap = paste("Cumulative catch of sockeye, pink, and chum, in the Discovery Islands and Johnstone Strait between 2015 and ", current_year, ".", sep=""), out.width="100%"}
-cols <-
-  c(
-    "2019" = "blue",
-    "2018" = "#aa1f25",
-    "2017" = "#a58457",
-    "2016" = "#346257",
-    "2015" = "#6699c5"
-  )
 shapes <-
   c(
     "2015-2018" = "triangle",
@@ -426,14 +416,14 @@ ggplot()+
                                 "July 1", "July 15")) +
       coord_cartesian(xlim = c(128, 190)) + 
       #scale_shape_manual(values = shapes) +
-      scale_colour_manual(values = cols, name="",
+      scale_colour_manual(values = hakai_palette("hakai_web"), name="",
                          breaks=c("2015-2018", "2015", "2016", 
                                   "2017", "2018", "2019"),
                          labels=c("Average", "2015", "2016", 
                                   "2017", "2018", "2019")) +
   theme(legend.position = c(0.9, 0.5)) +
-  theme(panel.grid.major.y= element_line("#DCDCDC")) +
-  theme(panel.grid.major.x= element_line("#DCDCDC")) +
+  # theme(panel.grid.major.y= element_line("#DCDCDC")) +
+  # theme(panel.grid.major.x= element_line("#DCDCDC")) +
   facet_grid(species ~ .) +
   ggtitle("Migration Timing") 
     
@@ -535,7 +525,7 @@ ggsave(here("figs", "length_weight.png"), width = 8, height = 6)
 ```
 
 
-```{r sealice-abundance-plot, fig.cap="The abundance of motile sea lice on juvenile salmon in the Discovery Islands and Johnstone Strait. The numbers under each bar indicate the sample size and the error bars indicate the 95 percent confidence region.", out.width="90%"}
+```{r sealice-abundance-plot, fig.cap="The abundance of motile sea lice on juvenile salmon in the Discovery Islands and Johnstone Strait. The numbers under each bar indicate the sample size and the error bars indicate the 95 percent confidence region.", out.width="85%"}
 
 lice_bootstraps$species <- factor(lice_bootstraps$species) %>% 
   fct_relevel("SO", "PI", "CU") %>% 
@@ -699,7 +689,7 @@ migration_timing <- migration_timing %>%
   drop_na()
 knitr::kable(migration_timing, format = 'markdown')
 ```
-Table: (\#tab:migration-timing-table) Migration timing statistics for the cumulative catch of sockeye, pink, and chum salmon in the Discovery Islands in 2018, compared to the time-series average (2015 - `r current_year`). Q1 is when 25 % of the species passed through the regions, peak date is the median when 50 % passed through, Q3 is 75%, and Spread is the difference between Peak Date and Q1. The region DI indicates the Discovery Islands while for species SO is sockeye, PI is pink, and CU is chum. 
+Table: (\#tab:migration-timing-table) Migration timing statistics for the cumulative catch of sockeye, pink, and chum salmon in the Discovery Islands in 2019, compared to the time-series average (2015 - `r current_year`). Q1 is when 25 % of the species passed through the regions, peak date is the median when 50 % passed through, Q3 is 75%, and Spread is the difference between Peak Date and Q1. The region DI indicates the Discovery Islands while for species SO is sockeye, PI is pink, and CU is chum. 
 
 ```{r catch-intensity-table}
 catch_intensity <- catch_intensity %>% 
